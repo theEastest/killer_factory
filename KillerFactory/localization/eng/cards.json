@@ -1,0 +1,8 @@
+{
+  "KILLER_FACTORY_CARD_KILLER_FACTORY_STRIKE.title": "Template Strike",
+  "KILLER_FACTORY_CARD_KILLER_FACTORY_STRIKE.description": "Deal {Damage:diff()} damage.",
+  "KILLER_FACTORY_CARD_KILLER_FACTORY_STRIKE.smartDescription": "Deal {Damage:diff()} damage.",
+  "KILLER_FACTORY_CARD_KILLER_FACTORY_DEFEND.title": "Template Defend",
+  "KILLER_FACTORY_CARD_KILLER_FACTORY_DEFEND.description": "Gain {Block:diff()} Block.",
+  "KILLER_FACTORY_CARD_KILLER_FACTORY_DEFEND.smartDescription": "Gain {Block:diff()} Block."
+}

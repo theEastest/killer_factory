@@ -1,0 +1,8 @@
+{
+  "KILLER_FACTORY_CARD_KILLER_FACTORY_STRIKE.title": "模板打击",
+  "KILLER_FACTORY_CARD_KILLER_FACTORY_STRIKE.description": "造成 {Damage:diff()} 点伤害。",
+  "KILLER_FACTORY_CARD_KILLER_FACTORY_STRIKE.smartDescription": "造成 {Damage:diff()} 点伤害。",
+  "KILLER_FACTORY_CARD_KILLER_FACTORY_DEFEND.title": "模板防御",
+  "KILLER_FACTORY_CARD_KILLER_FACTORY_DEFEND.description": "获得 {Block:diff()} 点格挡。",
+  "KILLER_FACTORY_CARD_KILLER_FACTORY_DEFEND.smartDescription": "获得 {Block:diff()} 点格挡。"
+}

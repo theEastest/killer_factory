@@ -1,0 +1,21 @@
+{
+  "KILLER_FACTORY_CHARACTER_KILLER_FACTORY_CHARACTER.aromaPrinciple": "[sine][blue]A clean template is ready for a new run.[/blue][/sine]",
+  "KILLER_FACTORY_CHARACTER_KILLER_FACTORY_CHARACTER.banter.alive.endTurnPing": "Turn complete.",
+  "KILLER_FACTORY_CHARACTER_KILLER_FACTORY_CHARACTER.banter.dead.endTurnPing": "I am out for now.",
+  "KILLER_FACTORY_CHARACTER_KILLER_FACTORY_CHARACTER.cardsModifierDescription": "Template Character cards can now appear in rewards and shops.",
+  "KILLER_FACTORY_CHARACTER_KILLER_FACTORY_CHARACTER.cardsModifierTitle": "Template Cards",
+  "KILLER_FACTORY_CHARACTER_KILLER_FACTORY_CHARACTER.defeatMessage": "The template still needs a little tuning.",
+  "KILLER_FACTORY_CHARACTER_KILLER_FACTORY_CHARACTER.description": "A sample character used to verify the RitsuLib template project.\nReplace this text with your own character concept after copying the template.",
+  "KILLER_FACTORY_CHARACTER_KILLER_FACTORY_CHARACTER.eventDeathPrevention": "Template Character keeps going.",
+  "KILLER_FACTORY_CHARACTER_KILLER_FACTORY_CHARACTER.flavor": "A clean template waiting to become a new adventure.",
+  "KILLER_FACTORY_CHARACTER_KILLER_FACTORY_CHARACTER.goldMonologue": "This gold is enough to start testing.",
+  "KILLER_FACTORY_CHARACTER_KILLER_FACTORY_CHARACTER.possessiveAdjective": "their",
+  "KILLER_FACTORY_CHARACTER_KILLER_FACTORY_CHARACTER.pronounObject": "them",
+  "KILLER_FACTORY_CHARACTER_KILLER_FACTORY_CHARACTER.pronounPossessive": "theirs",
+  "KILLER_FACTORY_CHARACTER_KILLER_FACTORY_CHARACTER.pronounSubject": "they",
+  "KILLER_FACTORY_CHARACTER_KILLER_FACTORY_CHARACTER.selectMessage": "Template Character is ready.",
+  "KILLER_FACTORY_CHARACTER_KILLER_FACTORY_CHARACTER.title": "Template Character",
+  "KILLER_FACTORY_CHARACTER_KILLER_FACTORY_CHARACTER.titleObject": "Template Character",
+  "KILLER_FACTORY_CHARACTER_KILLER_FACTORY_CHARACTER.unlockText": "Complete a run as [pink]{Prerequisite}[/pink] to unlock this character.",
+  "KILLER_FACTORY_CHARACTER_KILLER_FACTORY_CHARACTER.victoryMessage": "Template verification complete."
+}

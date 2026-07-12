@@ -1,0 +1,18 @@
+{
+  "id": "KillerFactory",
+  "name": "杀戮工厂",
+  "pck_name": "KillerFactory",
+  "author": "theEastest",
+  "description": "《杀戮尖塔2》自定义角色模组：杀戮工厂。",
+  "version": "0.1.0",
+  "has_pck": true,
+  "has_dll": true,
+  "affects_gameplay": true,
+  "min_game_version": "0.108.0",
+  "dependencies": [
+    {
+      "id": "STS2-RitsuLib",
+      "version": "0.4.56"
+    }
+  ]
+}
