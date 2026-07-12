@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="36" fill="#413653"/>
+  <rect x="28" y="28" width="456" height="456" rx="24" fill="none" stroke="#c99cff" stroke-width="12"/>
+  <path d="M90 330h332M120 285h272M160 240h192" stroke="#c99cff" stroke-width="18" stroke-linecap="round" opacity=".65"/>
+  <circle cx="256" cy="178" r="70" fill="#c99cff" opacity=".22"/>
+  <text x="256" y="190" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-size="34" font-weight="700" fill="#ffffff">加工工艺</text>
+  <text x="256" y="410" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-size="22" fill="#c99cff">杀戮工厂 · 占位美术</text>
+</svg>

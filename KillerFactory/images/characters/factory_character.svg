@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="768" height="768" viewBox="0 0 768 768">
+  <rect width="768" height="768" rx="48" fill="#162b35"/>
+  <rect x="74" y="250" width="620" height="390" rx="26" fill="#315966" stroke="#f2c14f" stroke-width="14"/>
+  <path d="M130 250V140h130v110M310 250V92h112v158M500 250V165h125v85" fill="#24434e" stroke="#79c7d3" stroke-width="12"/>
+  <g fill="#f2c14f"><circle cx="200" cy="390" r="54"/><circle cx="384" cy="390" r="54"/><circle cx="568" cy="390" r="54"/></g>
+  <g fill="#162b35"><circle cx="200" cy="390" r="22"/><circle cx="384" cy="390" r="22"/><circle cx="568" cy="390" r="22"/></g>
+  <rect x="135" y="500" width="498" height="82" rx="16" fill="#1d3943"/>
+  <text x="384" y="555" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-size="42" font-weight="700" fill="#ffffff">杀戮工厂</text>
+  <text x="384" y="705" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-size="24" fill="#79c7d3">角色占位美术</text>
+</svg>

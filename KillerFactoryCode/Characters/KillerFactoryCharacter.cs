@@ -48,17 +48,17 @@ public sealed class KillerFactoryCharacter : ModCharacterTemplate<KillerFactoryC
             RestSiteAnimPath: RestSiteScenePath),
         Ui: new CharacterUiAssetSet(
             // 人物头像路径。
-            IconTexturePath: $"{ImageRoot}/KillerFactory_character_icon.png",
+            IconTexturePath: $"{ImageRoot}/factory_icon.svg",
             // 人物头像轮廓。
-            IconOutlineTexturePath: $"{ImageRoot}/KillerFactory_character_icon_outline.png",
+            IconOutlineTexturePath: $"{ImageRoot}/factory_icon.svg",
             // 人物选择背景。
             CharacterSelectBgPath: CharacterSelectBgScenePath,
             // 人物选择图标。
-            CharacterSelectIconPath: $"{ImageRoot}/KillerFactory_character_select.png",
+            CharacterSelectIconPath: $"{ImageRoot}/factory_character.svg",
             // 人物选择图标-锁定状态。
-            CharacterSelectLockedIconPath: $"{ImageRoot}/KillerFactory_character_select_locked.png",
+            CharacterSelectLockedIconPath: $"{ImageRoot}/factory_character.svg",
             // 地图上的角色标记图标、表情轮盘上的角色头像。
-            MapMarkerPath: $"{ImageRoot}/KillerFactory_map_marker.png"));
+            MapMarkerPath: $"{ImageRoot}/factory_icon.svg"));
 
     // 某个字段没写时，RitsuLib 会从占位角色配置里补齐。
     public override string? PlaceholderCharacterId => "ironclad";

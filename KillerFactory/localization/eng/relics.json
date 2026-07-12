@@ -1,5 +1,5 @@
 {
-  "KILLER_FACTORY_RELIC_KILLER_FACTORY_RELIC.title": "Template Relic",
-  "KILLER_FACTORY_RELIC_KILLER_FACTORY_RELIC.description": "At the start of each turn, draw [blue]{Cards}[/blue] card.",
-  "KILLER_FACTORY_RELIC_KILLER_FACTORY_RELIC.flavor": "A sample relic used to verify the template project."
+  "KILLER_FACTORY_RELIC_KILLER_FACTORY_RELIC.title": "Simple Mechanical Arm",
+  "KILLER_FACTORY_RELIC_KILLER_FACTORY_RELIC.description": "At the start of each combat, install a Simple Mechanical Arm on the factory line.",
+  "KILLER_FACTORY_RELIC_KILLER_FACTORY_RELIC.flavor": "Slow, dependable, and incapable of complaining about repetition."
 }

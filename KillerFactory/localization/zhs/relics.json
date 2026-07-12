@@ -1,5 +1,5 @@
 {
-  "KILLER_FACTORY_RELIC_KILLER_FACTORY_RELIC.title": "模板遗物",
-  "KILLER_FACTORY_RELIC_KILLER_FACTORY_RELIC.description": "每回合开始时，抽 [blue]{Cards}[/blue] 张牌。",
-  "KILLER_FACTORY_RELIC_KILLER_FACTORY_RELIC.flavor": "一个用于验证模板工程的示例遗物。"
+  "KILLER_FACTORY_RELIC_KILLER_FACTORY_RELIC.title": "简易机械臂",
+  "KILLER_FACTORY_RELIC_KILLER_FACTORY_RELIC.description": "每场战斗开始时，在机械产线中架设一台简易机械臂。",
+  "KILLER_FACTORY_RELIC_KILLER_FACTORY_RELIC.flavor": "它动作迟缓，但从不抱怨重复劳动。"
 }

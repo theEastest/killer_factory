@@ -5,14 +5,14 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.ValueProps;
 using KillerFactory.Characters;
 using STS2RitsuLib.Interop.AutoRegistration;
-using STS2RitsuLib.Scaffolding.Content;
+using KillerFactory.Mechanics;
 
 namespace KillerFactory.Cards;
 
 // 防御牌和打击一样注册到角色卡池，并作为 4 张初始卡加入角色卡组。
 [RegisterCard(typeof(KillerFactoryCardPool))]
-[RegisterCharacterStarterCard(typeof(KillerFactoryCharacter), 4)]
-public sealed class KillerFactoryDefend : ModCardTemplate
+[RegisterCharacterStarterCard(typeof(KillerFactoryCharacter), 5)]
+public sealed class KillerFactoryDefend : FactoryComponentCard
 {
     // 基础耗能。
     private const int BaseEnergyCost = 1;
@@ -29,9 +29,6 @@ public sealed class KillerFactoryDefend : ModCardTemplate
 
     // 卡图资源。
     // 如果你按这行代码写，文件名就对应 KillerFactory/images/cards/KillerFactoryDefend.png。
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: $"{Entry.ResPath}/images/cards/{GetType().Name}.png");
-
     protected override HashSet<CardTag> CanonicalTags => new() { CardTag.Defend };
 
     // 卡牌基础数值。
@@ -41,7 +38,7 @@ public sealed class KillerFactoryDefend : ModCardTemplate
         new BlockVar(5m, ValueProp.Move)
     ];
 
-    public KillerFactoryDefend() : base(BaseEnergyCost, CardKind, CardRarityValue, CardTarget, ShowInCardLibrary)
+    public KillerFactoryDefend() : base(BaseEnergyCost, CardKind, CardRarityValue, CardTarget, ShowInCardLibrary, "component_defend")
     {
     }
 

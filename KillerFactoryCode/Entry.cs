@@ -3,6 +3,7 @@ using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Modding;
 using STS2RitsuLib;
 using STS2RitsuLib.Interop;
+using KillerFactory.Mechanics;
 using Logger = MegaCrit.Sts2.Core.Logging.Logger;
 
 namespace KillerFactory;
@@ -32,6 +33,10 @@ public partial class Entry
         // 自动注册扫描会读取当前程序集里的 RegisterCard/RegisterRelic 等 attribute。
         // 新增内容类后，只要 attribute 写对，通常不需要在入口里手动逐个注册。
         ModTypeDiscoveryHub.RegisterModAssembly(ModId, assembly);
+
+        // 产线面板只应在当前战斗由初始遗物激活，避免上一场状态泄漏到其他角色或战斗。
+        RitsuLibFramework.SubscribeLifecycle<CombatStartingEvent>(static _ => FactoryCombatState.ClearCurrent());
+        RitsuLibFramework.SubscribeLifecycle<CombatEndedEvent>(static _ => FactoryCombatState.ClearCurrent());
 
         Logger.Info("KillerFactory initialized.");
     }
