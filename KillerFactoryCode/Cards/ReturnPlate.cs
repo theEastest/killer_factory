@@ -12,6 +12,8 @@ namespace KillerFactory.Cards;
 [RegisterCard(typeof(KillerFactoryCardPool))]
 public sealed class ReturnPlate : FactoryComponentCard
 {
+    public override IEnumerable<FactoryEffectSegment> GetNativeEffectSegments() =>
+        [new() { Kind = FactoryEffectKind.Block, Amount = (int)DynamicVars.Block.BaseValue }];
     public override bool GainsBlock => true;
     protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(2m, ValueProp.Move)];
 
@@ -22,6 +24,7 @@ public sealed class ReturnPlate : FactoryComponentCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
+        await FactoryFusionService.ResolveFusedEffects(this, choiceContext, cardPlay);
         await FactoryCardActions.TryReturnLoopPartner<ReciprocatingCutter>(Owner, this);
     }
 

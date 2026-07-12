@@ -12,6 +12,11 @@ namespace KillerFactory.Cards;
 [RegisterCard(typeof(KillerFactoryCardPool))]
 public sealed class ReciprocatingCutter : FactoryComponentCard
 {
+    public override IEnumerable<FactoryEffectSegment> GetNativeEffectSegments() =>
+    [
+        new() { Kind = FactoryEffectKind.Damage, Amount = (int)DynamicVars.Damage.BaseValue },
+        new() { Kind = FactoryEffectKind.AddScrap, Amount = 1 },
+    ];
     protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(3, ValueProp.Move)];
 
     public ReciprocatingCutter() : base(0, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true, "consumer")
@@ -26,6 +31,7 @@ public sealed class ReciprocatingCutter : FactoryComponentCard
             .Targeting(cardPlay.Target)
             .Execute(choiceContext);
         await FactoryCardActions.AddScrapToHand(Owner);
+        await FactoryFusionService.ResolveFusedEffects(this, choiceContext, cardPlay);
         await FactoryCardActions.TryReturnLoopPartner<ReturnPlate>(Owner, this);
     }
 

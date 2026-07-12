@@ -22,7 +22,7 @@ public sealed class FeedPump : FactoryCardTemplate
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        FactoryCombatState.For(Owner.Creature.CombatState!).AddMechanicalMaterial();
+        await FactoryCardActions.AddGeneratedCardToHand<MechanicalMaterial>(Owner);
         if (DynamicVars.Block.BaseValue > 0)
             await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
         await FactoryCardActions.TryReturnLoopPartner<ReactionMold>(Owner, this);

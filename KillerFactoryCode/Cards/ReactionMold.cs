@@ -17,7 +17,7 @@ public sealed class ReactionMold : FactoryCardTemplate
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        FactoryCombatState.For(Owner.Creature.CombatState!).AddCompoundMaterial(_upgraded ? 2 : 1);
+        await FactoryCardActions.AddGeneratedCardToHand<CompoundMaterial>(Owner, _upgraded ? 2 : 1);
         await FactoryCardActions.TryReturnLoopPartner<FeedPump>(Owner, this);
     }
 

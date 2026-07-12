@@ -1,0 +1,18 @@
+{
+  "KILLER_FACTORY_KEYWORD_PERMANENT_COMPONENT.title": "永久构件",
+  "KILLER_FACTORY_KEYWORD_PERMANENT_COMPONENT.description": "加工获得的实例改动会保留在这张牌上。",
+  "KILLER_FACTORY_KEYWORD_DISPOSABLE_COMPONENT.title": "一次性构件",
+  "KILLER_FACTORY_KEYWORD_DISPOSABLE_COMPONENT.description": "从机械中打出后会被消耗。",
+  "KILLER_FACTORY_KEYWORD_FRAGILE_COMPONENT.title": "脆弱构件",
+  "KILLER_FACTORY_KEYWORD_FRAGILE_COMPONENT.description": "第一次加工成功；再次加工前会损坏。",
+  "KILLER_FACTORY_KEYWORD_PRECISION_COMPONENT.title": "精密构件",
+  "KILLER_FACTORY_KEYWORD_PRECISION_COMPONENT.description": "作为融锻主体时，不会增加材料构件的费用。",
+  "KILLER_FACTORY_KEYWORD_PROCEDURE.title": "工序",
+  "KILLER_FACTORY_KEYWORD_PROCEDURE.description": "用于加工构件或操作工厂系统的卡牌。",
+  "KILLER_FACTORY_KEYWORD_MATERIAL.title": "原料",
+  "KILLER_FACTORY_KEYWORD_MATERIAL.description": "可被生产、加工和机械效果消耗。",
+  "KILLER_FACTORY_KEYWORD_WASTE.title": "废料",
+  "KILLER_FACTORY_KEYWORD_WASTE.description": "占用手牌，可被分解类效果处理。",
+  "KILLER_FACTORY_KEYWORD_DAMAGED_PRODUCT.title": "残次品",
+  "KILLER_FACTORY_KEYWORD_DAMAGED_PRODUCT.description": "由加工失败产生，可被修复或回收。"
+}

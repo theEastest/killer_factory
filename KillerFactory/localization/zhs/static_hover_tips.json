@@ -1,0 +1,5 @@
+{
+  "KILLER_FACTORY_CARDPILE_MACHINE_CACHE.title": "机械缓存",
+  "KILLER_FACTORY_CARDPILE_MACHINE_CACHE.description": "装填在机械产线中的真实卡牌实例，不计入手牌。",
+  "KILLER_FACTORY_CARDPILE_MACHINE_CACHE.empty": "机械缓存为空。"
+}

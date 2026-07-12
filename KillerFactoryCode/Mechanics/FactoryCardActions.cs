@@ -8,6 +8,19 @@ namespace KillerFactory.Mechanics;
 
 public static class FactoryCardActions
 {
+    public static async Task AddGeneratedCardToHand<TCard>(Player owner, int amount = 1)
+        where TCard : CardModel
+    {
+        for (var index = 0; index < amount; index++)
+        {
+            var card = owner.Creature.CombatState!.CreateCard<TCard>(owner);
+            var destination = PileType.Hand.GetPile(owner).Cards.Count < RitsuLibFramework.GetMaxHandSize(owner)
+                ? PileType.Hand
+                : PileType.Discard;
+            await CardPileCmd.AddGeneratedCardToCombat(card, destination, owner);
+        }
+    }
+
     public static async Task TryReturnLoopPartner<TPartner>(Player owner, AbstractModel source)
         where TPartner : CardModel
     {
@@ -29,16 +42,8 @@ public static class FactoryCardActions
 
     public static async Task AddScrapToHand(Player owner)
     {
-        var combat = owner.Creature.CombatState!;
-        var scrap = combat.CreateCard<Cards.KillerFactoryScrap>(owner);
-        var hand = PileType.Hand.GetPile(owner);
-        var destination = hand.Cards.Count < RitsuLibFramework.GetMaxHandSize(owner)
-            ? PileType.Hand
-            : PileType.Discard;
-
-        await CardPileCmd.AddGeneratedCardToCombat(scrap, destination, owner);
-        FactoryCombatState.For(combat).Record(
-            destination == PileType.Hand ? "废料进入工作区" : "工作区已满，废料溢出至弃牌堆");
+        await AddGeneratedCardToHand<Cards.KillerFactoryScrap>(owner);
+        FactoryCombatState.For(owner.Creature.CombatState!).Record("获得1张废料");
     }
 
     public static async Task<bool> ExhaustOneScrapFromHand(Player owner)

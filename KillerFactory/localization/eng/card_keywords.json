@@ -1,0 +1,18 @@
+{
+  "KILLER_FACTORY_KEYWORD_PERMANENT_COMPONENT.title": "Permanent Component",
+  "KILLER_FACTORY_KEYWORD_PERMANENT_COMPONENT.description": "Instance changes made by processing remain on this card.",
+  "KILLER_FACTORY_KEYWORD_DISPOSABLE_COMPONENT.title": "Disposable Component",
+  "KILLER_FACTORY_KEYWORD_DISPOSABLE_COMPONENT.description": "Exhaust this after it is played by a machine.",
+  "KILLER_FACTORY_KEYWORD_FRAGILE_COMPONENT.title": "Fragile Component",
+  "KILLER_FACTORY_KEYWORD_FRAGILE_COMPONENT.description": "The first process succeeds; it breaks before a second process.",
+  "KILLER_FACTORY_KEYWORD_PRECISION_COMPONENT.title": "Precision Component",
+  "KILLER_FACTORY_KEYWORD_PRECISION_COMPONENT.description": "When used as the fusion body, the material's Cost is not added.",
+  "KILLER_FACTORY_KEYWORD_PROCEDURE.title": "Procedure",
+  "KILLER_FACTORY_KEYWORD_PROCEDURE.description": "Processes components or operates factory systems.",
+  "KILLER_FACTORY_KEYWORD_MATERIAL.title": "Material",
+  "KILLER_FACTORY_KEYWORD_MATERIAL.description": "Can be produced and consumed by processing or machine effects.",
+  "KILLER_FACTORY_KEYWORD_WASTE.title": "Scrap",
+  "KILLER_FACTORY_KEYWORD_WASTE.description": "Clogs your Hand and can be handled by decomposer effects.",
+  "KILLER_FACTORY_KEYWORD_DAMAGED_PRODUCT.title": "Damaged Product",
+  "KILLER_FACTORY_KEYWORD_DAMAGED_PRODUCT.description": "Created by failed processing; it can be repaired or recycled."
+}

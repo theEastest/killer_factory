@@ -9,7 +9,7 @@ namespace KillerFactory.Cards;
 [RegisterCard(typeof(KillerFactoryCardPool))]
 public sealed class KillerFactoryScrap : FactoryCardTemplate
 {
-    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Unplayable];
+    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Unplayable, FactoryKeywords.Waste];
 
     public KillerFactoryScrap() : base(0, CardType.Status, CardRarity.Status, TargetType.None, false, "scrap")
     {

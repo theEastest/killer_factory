@@ -14,6 +14,11 @@ namespace KillerFactory.Cards;
 [RegisterCharacterStarterCard(typeof(KillerFactoryCharacter), 5)]
 public sealed class KillerFactoryDefend : FactoryComponentCard
 {
+    public override bool IsFragileComponent => true;
+    public override IEnumerable<CardKeyword> CanonicalKeywords =>
+        [FactoryKeywords.PermanentComponent, FactoryKeywords.FragileComponent];
+    public override IEnumerable<FactoryEffectSegment> GetNativeEffectSegments() =>
+        [new() { Kind = FactoryEffectKind.Block, Amount = (int)DynamicVars.Block.BaseValue }];
     // 基础耗能。
     private const int BaseEnergyCost = 1;
     // 卡牌类型。
@@ -46,6 +51,7 @@ public sealed class KillerFactoryDefend : FactoryComponentCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
+        await FactoryFusionService.ResolveFusedEffects(this, choiceContext, cardPlay);
     }
 
     // 升级后的效果逻辑。

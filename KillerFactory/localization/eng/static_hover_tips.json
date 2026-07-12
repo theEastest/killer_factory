@@ -1,0 +1,5 @@
+{
+  "KILLER_FACTORY_CARDPILE_MACHINE_CACHE.title": "Machine Cache",
+  "KILLER_FACTORY_CARDPILE_MACHINE_CACHE.description": "Real card instances loaded into factory machines. They do not count as cards in Hand.",
+  "KILLER_FACTORY_CARDPILE_MACHINE_CACHE.empty": "The machine cache is empty."
+}

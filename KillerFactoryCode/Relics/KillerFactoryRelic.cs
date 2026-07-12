@@ -38,7 +38,9 @@ public sealed class KillerFactoryRelic : ModRelicTemplate
     // 作为兼容兜底：如果战斗开始钩子执行时界面尚未就绪，第一回合再次确认安装。
     public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
     {
-        FactoryCombatState.For(player.Creature.CombatState!).InstallSimpleArm();
+        var state = FactoryCombatState.For(player.Creature.CombatState!);
+        state.InstallSimpleArm();
+        state.RechargeMachines();
         await Task.CompletedTask;
     }
 }

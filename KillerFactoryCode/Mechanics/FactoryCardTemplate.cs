@@ -24,8 +24,13 @@ public abstract class FactoryCardTemplate : ModCardTemplate
 }
 
 public abstract class FactoryComponentCard : FactoryCardTemplate
+    , IFactoryComponentDefinition
 {
     public virtual bool IsPrecisionComponent => false;
+    public virtual bool IsFragileComponent => false;
+    public override IEnumerable<CardKeyword> CanonicalKeywords => [FactoryKeywords.PermanentComponent];
+
+    public abstract IEnumerable<FactoryEffectSegment> GetNativeEffectSegments();
 
     protected FactoryComponentCard(
         int energyCost,

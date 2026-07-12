@@ -4,23 +4,26 @@ using System.Runtime.CompilerServices;
 
 namespace KillerFactory.Mechanics;
 
-/// <summary>
-/// 首轮实现的战斗内工厂状态。原料暂以仓储计数表示，废料仍是实际卡牌。
-/// </summary>
+public sealed class FactoryMachineState
+{
+    public required string Name { get; init; }
+    public int MaxEnergy { get; init; } = 5;
+    public int Energy { get; set; }
+    public CardModel? CachedCard { get; set; }
+
+    public bool CanAccept(CardModel card) => card is FactoryComponentCard;
+}
+
 public sealed class FactoryCombatState
 {
+    public const int MaximumMachineSlots = 10;
     private static readonly ConditionalWeakTable<ICombatState, FactoryCombatState> States = new();
 
     public static FactoryCombatState? Current { get; private set; }
-
     public static void ClearCurrent() => Current = null;
 
-    public int MechanicalMaterial { get; private set; }
-    public int CompoundMaterial { get; private set; }
-    public bool SimpleArmInstalled { get; private set; }
+    public List<FactoryMachineState> Machines { get; } = [];
     public string LastAction { get; private set; } = "产线待机";
-
-    private readonly HashSet<CardModel> _fusedCards = [];
 
     public static FactoryCombatState For(ICombatState combatState)
     {
@@ -31,32 +34,24 @@ public sealed class FactoryCombatState
 
     public void InstallSimpleArm()
     {
-        SimpleArmInstalled = true;
+        if (Machines.Any(machine => machine.Name == "简易机械臂"))
+            return;
+        if (Machines.Count >= MaximumMachineSlots)
+        {
+            LastAction = "机械槽位已满";
+            return;
+        }
+
+        Machines.Add(new FactoryMachineState { Name = "简易机械臂" });
         LastAction = "简易机械臂已架设";
     }
 
-    public void AddMechanicalMaterial(int amount = 1)
+    public void RechargeMachines(int amount = 1)
     {
-        MechanicalMaterial += amount;
-        LastAction = $"机械原料 +{amount}";
+        foreach (var machine in Machines)
+            machine.Energy = Math.Min(machine.MaxEnergy, machine.Energy + amount);
+        LastAction = $"机械自动充能 +{amount}";
     }
 
-    public void AddCompoundMaterial(int amount = 1)
-    {
-        CompoundMaterial += amount;
-        LastAction = $"化合原料 +{amount}";
-    }
-
-    public bool IsFused(CardModel card) => _fusedCards.Contains(card);
-
-    public void MarkFused(CardModel card)
-    {
-        _fusedCards.Add(card);
-        LastAction = $"{card.GetType().Name} 完成初步融锻";
-    }
-
-    public void Record(string action)
-    {
-        LastAction = action;
-    }
+    public void Record(string action) => LastAction = action;
 }
