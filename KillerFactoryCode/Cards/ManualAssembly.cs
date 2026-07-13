@@ -13,6 +13,8 @@ namespace KillerFactory.Cards;
 [RegisterCharacterStarterCard(typeof(KillerFactoryCharacter), 1)]
 public sealed class ManualAssembly : FactoryCardTemplate
 {
+    public sealed record FusionTargets(FactoryComponentCard Body, FactoryComponentCard Material);
+
     public override IEnumerable<CardKeyword> CanonicalKeywords => [FactoryKeywords.Procedure];
 
     public ManualAssembly() : base(1, CardType.Skill, CardRarity.Basic, TargetType.Self, true, "process")
@@ -21,15 +23,25 @@ public sealed class ManualAssembly : FactoryCardTemplate
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        var state = FactoryCombatState.For(Owner.Creature.CombatState!);
-        var components = PileType.Hand.GetPile(Owner).Cards
+        var targets = await SelectTargetsAsync(choiceContext, Owner);
+        if (targets is not null)
+            await FactoryFusionService.FuseAsync(targets.Body, targets.Material, IsUpgraded);
+    }
+
+    public async Task<FusionTargets?> SelectTargetsAsync(
+        PlayerChoiceContext choiceContext,
+        MegaCrit.Sts2.Core.Entities.Players.Player owner,
+        bool reportCancellation = true)
+    {
+        var state = FactoryCombatState.For(owner.Creature.CombatState!);
+        var components = PileType.Hand.GetPile(owner).Cards
             .OfType<FactoryComponentCard>()
             .ToList();
 
         if (components.Count < 2)
         {
             state.Record("手工装配失败：需要两张可融锻构件");
-            return;
+            return null;
         }
 
         var bodyPrefs = new CardSelectorPrefs(
@@ -38,13 +50,13 @@ public sealed class ManualAssembly : FactoryCardTemplate
             Cancelable = true,
             RequireManualConfirmation = true,
         };
-        var body = (await CardSelectCmd.FromSimpleGrid(choiceContext, components, Owner, bodyPrefs))
+        var body = (await CardSelectCmd.FromSimpleGrid(choiceContext, components, owner, bodyPrefs))
             .OfType<FactoryComponentCard>()
             .FirstOrDefault();
         if (body is null)
         {
-            state.Record("取消手工装配");
-            return;
+            if (reportCancellation) state.Record("取消手工装配");
+            return null;
         }
 
         var materialPrefs = new CardSelectorPrefs(
@@ -56,17 +68,17 @@ public sealed class ManualAssembly : FactoryCardTemplate
         var material = (await CardSelectCmd.FromSimpleGrid(
                 choiceContext,
                 components.Where(card => !ReferenceEquals(card, body)).ToList(),
-                Owner,
+                owner,
                 materialPrefs))
             .OfType<FactoryComponentCard>()
             .FirstOrDefault();
         if (material is null)
         {
-            state.Record("取消手工装配");
-            return;
+            if (reportCancellation) state.Record("取消手工装配");
+            return null;
         }
 
-        await FactoryFusionService.FuseAsync(body, material, IsUpgraded);
+        return new FusionTargets(body, material);
     }
 
     protected override void OnUpgrade()

@@ -16,10 +16,17 @@ public static class FactoryFusionService
         bool upgradeFirst)
     {
         var bodyState = body.GetOrCreateCapability<FactoryCardStateCapability>();
-        if (body.IsFragileComponent && bodyState.ProcessCount > 0)
+        if (body.Keywords.Contains(FactoryKeywords.FragileComponent) && bodyState.ProcessCount > 0)
         {
             await CardPileCmd.Add(body, PileType.Exhaust);
-            await FactoryCardActions.AddScrapToHand(body.Owner);
+            if (bodyState.IsEfficient)
+            {
+                await FactoryCardActions.AddGeneratedCardToHand<Cards.UniversalMaterial>(body.Owner);
+                if (bodyState.EfficientDraw)
+                    await CardPileCmd.Draw(new ThrowingPlayerChoiceContext(), 1, body.Owner);
+            }
+            else
+                await FactoryCardActions.AddScrapToHand(body.Owner);
             FactoryCombatState.For(body.Owner.Creature.CombatState!).Record("脆弱构件在再次加工前损坏");
             return false;
         }
@@ -36,7 +43,7 @@ public static class FactoryFusionService
         var effects = material.GetNativeEffectSegments().Concat(materialState.FusedEffects).ToList();
         bodyState.AddFusion(effects);
 
-        if (!body.IsPrecisionComponent)
+        if (!body.Keywords.Contains(FactoryKeywords.PrecisionComponent))
         {
             var bodyCost = body.EnergyCost.GetWithModifiers(CostModifiers.None);
             var materialCost = material.EnergyCost.GetWithModifiers(CostModifiers.None);
@@ -54,16 +61,23 @@ public static class FactoryFusionService
         PlayerChoiceContext choiceContext,
         CardPlay cardPlay)
     {
-        var state = card.GetOrCreateCapability<FactoryCardStateCapability>();
+        if (!card.TryGetCapability<FactoryCardStateCapability>(out var state))
+        {
+            await FactoryCardActions.TriggerComponentLoopReturns(card);
+            return;
+        }
         foreach (var effect in state.FusedEffects)
         {
             switch (effect.Kind)
             {
                 case FactoryEffectKind.Damage when cardPlay.Target is not null:
-                    await DamageCmd.Attack(effect.Amount)
-                        .FromCard(card, cardPlay)
-                        .Targeting(cardPlay.Target)
-                        .Execute(choiceContext);
+                    for (var hit = 0; hit < Math.Max(1, effect.Hits); hit++)
+                    {
+                        await DamageCmd.Attack(effect.Amount)
+                            .FromCard(card, cardPlay)
+                            .Targeting(cardPlay.Target)
+                            .Execute(choiceContext);
+                    }
                     break;
                 case FactoryEffectKind.Block:
                     await CreatureCmd.GainBlock(
@@ -76,5 +90,6 @@ public static class FactoryFusionService
                     break;
             }
         }
+        await FactoryCardActions.TriggerComponentLoopReturns(card);
     }
 }

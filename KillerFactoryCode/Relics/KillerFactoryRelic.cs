@@ -31,7 +31,7 @@ public sealed class KillerFactoryRelic : ModRelicTemplate
     {
         var combat = Owner.Creature.CombatState;
         if (combat is not null)
-            FactoryCombatState.For(combat).InstallSimpleArm();
+            FactoryCombatState.For(combat).InstallStarterMachines();
         return Task.CompletedTask;
     }
 
@@ -39,7 +39,7 @@ public sealed class KillerFactoryRelic : ModRelicTemplate
     public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
     {
         var state = FactoryCombatState.For(player.Creature.CombatState!);
-        state.InstallSimpleArm();
+        state.InstallStarterMachines();
         state.RechargeMachines();
         await Task.CompletedTask;
     }

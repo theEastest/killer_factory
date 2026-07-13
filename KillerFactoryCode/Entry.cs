@@ -39,6 +39,13 @@ public partial class Entry
         // 产线面板只应在当前战斗由初始遗物激活，避免上一场状态泄漏到其他角色或战斗。
         RitsuLibFramework.SubscribeLifecycle<CombatStartingEvent>(static _ => FactoryCombatState.ClearCurrent());
         RitsuLibFramework.SubscribeLifecycle<CombatEndedEvent>(static _ => FactoryCombatState.ClearCurrent());
+        RitsuLibFramework.SubscribeLifecycle<CardMovedBetweenPilesEvent>(static _ =>
+            FactoryCombatEndWatcher.OnCardMoved());
+        RitsuLibFramework.SubscribeLifecycle<PlayerTurnStartedEvent>(FactoryAbilityRuntime.OnTurnStarted);
+        RitsuLibFramework.SubscribeLifecycle<CardDrawnEvent>(FactoryAbilityRuntime.OnCardDrawn);
+        RitsuLibFramework.SubscribeLifecycle<CardExhaustedEvent>(FactoryAbilityRuntime.OnCardExhausted);
+        RitsuLibFramework.SubscribeLifecycle<CardMovedBetweenPilesEvent>(FactoryAbilityRuntime.OnCardMoved);
+        RitsuLibFramework.SubscribeLifecycle<CardPlayedEvent>(FactoryAbilityRuntime.OnCardPlayed);
 
         Logger.Info("KillerFactory initialized.");
     }

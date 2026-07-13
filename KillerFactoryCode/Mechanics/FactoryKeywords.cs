@@ -13,8 +13,10 @@ namespace KillerFactory.Mechanics;
 [RegisterOwnedCardKeyword(nameof(Material), CardDescriptionPlacement = ModKeywordCardDescriptionPlacement.BeforeCardDescription)]
 [RegisterOwnedCardKeyword(nameof(Waste), CardDescriptionPlacement = ModKeywordCardDescriptionPlacement.BeforeCardDescription)]
 [RegisterOwnedCardKeyword(nameof(DamagedProduct), CardDescriptionPlacement = ModKeywordCardDescriptionPlacement.BeforeCardDescription)]
-public static class FactoryKeywords
+[RegisterOwnedCardKeyword(nameof(VirusComponent), CardDescriptionPlacement = ModKeywordCardDescriptionPlacement.BeforeCardDescription)]
+public sealed class FactoryKeywords
 {
+    private FactoryKeywords() { }
     public static readonly CardKeyword PermanentComponent = Resolve(nameof(PermanentComponent));
     public static readonly CardKeyword DisposableComponent = Resolve(nameof(DisposableComponent));
     public static readonly CardKeyword FragileComponent = Resolve(nameof(FragileComponent));
@@ -23,6 +25,7 @@ public static class FactoryKeywords
     public static readonly CardKeyword Material = Resolve(nameof(Material));
     public static readonly CardKeyword Waste = Resolve(nameof(Waste));
     public static readonly CardKeyword DamagedProduct = Resolve(nameof(DamagedProduct));
+    public static readonly CardKeyword VirusComponent = Resolve(nameof(VirusComponent));
 
     private static CardKeyword Resolve(string stem) =>
         ModContentRegistry.GetQualifiedKeywordId(Entry.ModId, stem).GetModCardKeyword();

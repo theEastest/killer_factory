@@ -1,7 +1,13 @@
 using MegaCrit.Sts2.Core.Entities.Cards;
 using STS2RitsuLib.Scaffolding.Content;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 
 namespace KillerFactory.Mechanics;
+
+public interface IFactoryProcedureCard
+{
+    Task<bool> ExecuteProcedureAsync(PlayerChoiceContext choiceContext);
+}
 
 public abstract class FactoryCardTemplate : ModCardTemplate
 {

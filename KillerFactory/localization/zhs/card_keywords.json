@@ -15,4 +15,6 @@
   "KILLER_FACTORY_KEYWORD_WASTE.description": "占用手牌，可被分解类效果处理。",
   "KILLER_FACTORY_KEYWORD_DAMAGED_PRODUCT.title": "残次品",
   "KILLER_FACTORY_KEYWORD_DAMAGED_PRODUCT.description": "由加工失败产生，可被修复或回收。"
+  ,"KILLER_FACTORY_KEYWORD_VIRUS_COMPONENT.title": "病毒构件"
+  ,"KILLER_FACTORY_KEYWORD_VIRUS_COMPONENT.description": "生效时会将其他实际手牌转化为自身复制的构件。"
 }

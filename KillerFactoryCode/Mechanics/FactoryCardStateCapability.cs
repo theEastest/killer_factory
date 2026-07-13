@@ -17,12 +17,20 @@ public sealed class FactoryEffectSegment
 {
     public FactoryEffectKind Kind { get; set; }
     public int Amount { get; set; }
+    public int Hits { get; set; } = 1;
 }
 
 public sealed class FactoryCardInstanceState
 {
     public int ProcessCount { get; set; }
     public List<FactoryEffectSegment> FusedEffects { get; set; } = [];
+    public bool HasExternalSpring { get; set; }
+    public bool IsEfficient { get; set; }
+    public bool EfficientDraw { get; set; }
+    public bool IsHard { get; set; }
+    public bool IsStreamlined { get; set; }
+    public bool IsSticky { get; set; }
+    public bool StickyFirstCopyFree { get; set; }
 }
 
 [RegisterModelCapability]
@@ -33,6 +41,20 @@ public sealed class FactoryCardStateCapability
 {
     public int ProcessCount => State.ProcessCount;
     public IReadOnlyList<FactoryEffectSegment> FusedEffects => State.FusedEffects;
+    public bool HasExternalSpring => State.HasExternalSpring;
+    public bool IsEfficient => State.IsEfficient;
+    public bool EfficientDraw => State.EfficientDraw;
+    public bool IsHard => State.IsHard;
+    public bool IsStreamlined => State.IsStreamlined;
+    public bool IsSticky => State.IsSticky;
+    public bool StickyFirstCopyFree => State.StickyFirstCopyFree;
+
+    public void ApplyProcessing(Action<FactoryCardInstanceState> mutation)
+    {
+        MutateState(state => { state.ProcessCount++; mutation(state); });
+    }
+
+    public void ResetProcessCount() => MutateState(state => state.ProcessCount = 0);
 
     public void AddFusion(IEnumerable<FactoryEffectSegment> effects)
     {
@@ -43,6 +65,7 @@ public sealed class FactoryCardStateCapability
             {
                 Kind = effect.Kind,
                 Amount = effect.Amount,
+                Hits = effect.Hits,
             }));
         });
     }
@@ -58,6 +81,7 @@ public sealed class FactoryCardStateCapability
         {
             var key = effect.Kind switch
             {
+                FactoryEffectKind.Damage when effect.Hits > 1 => "KILLER_FACTORY_FUSED_MULTI_DAMAGE",
                 FactoryEffectKind.Damage => "KILLER_FACTORY_FUSED_DAMAGE",
                 FactoryEffectKind.Block => "KILLER_FACTORY_FUSED_BLOCK",
                 FactoryEffectKind.AddScrap => "KILLER_FACTORY_FUSED_SCRAP",
@@ -67,6 +91,7 @@ public sealed class FactoryCardStateCapability
                 continue;
             var text = new LocString("cards", key);
             text.Add("Amount", effect.Amount);
+            text.Add("Hits", effect.Hits);
             yield return new CardDescriptionFragment(text);
         }
     }

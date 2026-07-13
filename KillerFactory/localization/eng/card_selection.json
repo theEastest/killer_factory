@@ -1,4 +1,18 @@
 {
   "KILLER_FACTORY_SELECT_FUSION_BODY": "Choose the body component",
-  "KILLER_FACTORY_SELECT_FUSION_MATERIAL": "Choose the material component to fuse"
+  "KILLER_FACTORY_SELECT_FUSION_MATERIAL": "Choose the material component to fuse",
+  "KILLER_FACTORY_SELECT_COMPONENT_TO_SCRAP": "Choose a Component to turn into Scrap",
+  "KILLER_FACTORY_SELECT_SCRAP_TO_RECYCLE": "Choose Scrap to recycle"
+  ,"KILLER_FACTORY_SELECT_REPLACEMENT": "Choose cards to transform into Universal Material"
+  ,"KILLER_FACTORY_SELECT_MATERIAL": "Choose a Material"
+  ,"KILLER_FACTORY_SELECT_DECOMPOSE": "Choose a Material or Scrap to decompose"
+  ,"KILLER_FACTORY_SELECT_UPGRADE": "Choose a Component to upgrade"
+  ,"KILLER_FACTORY_SELECT_LIGHTWEIGHT": "Choose a Component to make lightweight"
+  ,"KILLER_FACTORY_SELECT_SORTING": "Choose cards to add to your Hand"
+  ,"KILLER_FACTORY_SELECT_RETRIEVAL": "Choose a card to retrieve"
+  ,"KILLER_FACTORY_SELECT_PRECISION_CORE": "Choose a Precision Core"
+  ,"KILLER_FACTORY_SELECT_STICKY": "Choose a card to make Sticky"
+  ,"KILLER_FACTORY_SELECT_PROCESS_TARGET": "Choose a Component to process"
+  ,"KILLER_FACTORY_SELECT_FILTER_DISCARD": "Choose a card to discard; cancel to finish"
+  ,"KILLER_FACTORY_SELECT_BLUEPRINT": "Choose a machine blueprint to install"
 }

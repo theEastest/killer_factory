@@ -15,4 +15,6 @@
   "KILLER_FACTORY_KEYWORD_WASTE.description": "Clogs your Hand and can be handled by decomposer effects.",
   "KILLER_FACTORY_KEYWORD_DAMAGED_PRODUCT.title": "Damaged Product",
   "KILLER_FACTORY_KEYWORD_DAMAGED_PRODUCT.description": "Created by failed processing; it can be repaired or recycled."
+  ,"KILLER_FACTORY_KEYWORD_VIRUS_COMPONENT.title": "Virus Component"
+  ,"KILLER_FACTORY_KEYWORD_VIRUS_COMPONENT.description": "A Component that converts other cards in the actual Hand into copies of itself."
 }
