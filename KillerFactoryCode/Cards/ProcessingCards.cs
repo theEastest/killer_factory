@@ -3,6 +3,7 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization;
+using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using KillerFactory.Characters;
 using KillerFactory.Mechanics;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -37,6 +38,7 @@ public sealed class StandardCalibration : SelectComponentProcedure
 {
     private int _amount = 5;
     private bool _drawPile;
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new IntVar("Amount", 5)];
     protected override PileType TargetPile => _drawPile ? PileType.Draw : PileType.Hand;
     public StandardCalibration() : base(1, CardRarity.Common) { }
     protected override async Task OnPlay(PlayerChoiceContext context, CardPlay play)
@@ -51,7 +53,12 @@ public sealed class StandardCalibration : SelectComponentProcedure
         card.GetOrCreateCapability<FactoryCardStateCapability>().AddFusion(
             [new FactoryEffectSegment { Kind = segment.Kind, Amount = _amount }]);
     }
-    protected override void OnUpgrade() { _amount = 7; _drawPile = true; }
+    protected override void OnUpgrade()
+    {
+        _amount = 7;
+        _drawPile = true;
+        if (DynamicVars.TryGetValue("Amount", out var amount)) amount.UpgradeValueBy(2);
+    }
 }
 
 [RegisterCard(typeof(KillerFactoryCardPool))]
@@ -103,6 +110,7 @@ public sealed class Hardening : SelectComponentProcedure
 public sealed class StreamlinedImprovement : SelectComponentProcedure
 {
     private int _increase = 2;
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new IntVar("CostIncrease", 2)];
     public StreamlinedImprovement() : base(1, CardRarity.Uncommon) { }
     protected override void Apply(FactoryComponentCard card)
     {
@@ -110,7 +118,11 @@ public sealed class StreamlinedImprovement : SelectComponentProcedure
         card.EnergyCost.SetCustomBaseCost(cost + _increase);
         card.GetOrCreateCapability<FactoryCardStateCapability>().ApplyProcessing(state => state.IsStreamlined = true);
     }
-    protected override void OnUpgrade() => _increase = 1;
+    protected override void OnUpgrade()
+    {
+        _increase = 1;
+        if (DynamicVars.TryGetValue("CostIncrease", out var amount)) amount.UpgradeValueBy(-1);
+    }
 }
 
 [RegisterCard(typeof(KillerFactoryCardPool))]

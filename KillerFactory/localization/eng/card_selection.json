@@ -15,4 +15,5 @@
   ,"KILLER_FACTORY_SELECT_PROCESS_TARGET": "Choose a Component to process"
   ,"KILLER_FACTORY_SELECT_FILTER_DISCARD": "Choose a card to discard; cancel to finish"
   ,"KILLER_FACTORY_SELECT_BLUEPRINT": "Choose a machine blueprint to install"
+  ,"KILLER_FACTORY_SELECT_MACHINE_LOAD": "Choose a card to load into the machine slot"
 }

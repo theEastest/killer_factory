@@ -17,6 +17,8 @@ public sealed class ManualSorting : FactoryCardTemplate
 {
     private int _look = 5;
     private int _take = 2;
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+        [new IntVar("LookCount", 5), new IntVar("TakeCount", 2)];
     public ManualSorting() : base(1, CardType.Skill, CardRarity.Common, TargetType.Self, true, "producer") { }
     protected override async Task OnPlay(PlayerChoiceContext context, CardPlay play)
     {
@@ -28,7 +30,13 @@ public sealed class ManualSorting : FactoryCardTemplate
         foreach (var selected in await CardSelectCmd.FromSimpleGrid(context, candidates, Owner, prefs))
             await CardPileCmd.Add(selected, PileType.Hand);
     }
-    protected override void OnUpgrade() { _look = 7; _take = 3; }
+    protected override void OnUpgrade()
+    {
+        _look = 7;
+        _take = 3;
+        if (DynamicVars.TryGetValue("LookCount", out var look)) look.UpgradeValueBy(2);
+        if (DynamicVars.TryGetValue("TakeCount", out var take)) take.UpgradeValueBy(1);
+    }
 }
 
 [RegisterCard(typeof(KillerFactoryCardPool))]

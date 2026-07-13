@@ -77,6 +77,9 @@ public sealed class FactoryCardStateCapability
 
     public IEnumerable<CardDescriptionFragment> GetDescriptionFragments(CardDescriptionContext context)
     {
+        if (State.HasExternalSpring)
+            yield return new CardDescriptionFragment(new LocString("cards", "KILLER_FACTORY_MOD_EXTERNAL_SPRING"));
+
         foreach (var effect in State.FusedEffects)
         {
             var key = effect.Kind switch

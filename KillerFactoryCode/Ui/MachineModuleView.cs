@@ -20,6 +20,7 @@ public sealed partial class MachineModuleView : PanelContainer
     public MachineBufferSlotView BufferSlot { get; } = new();
     public event Action<FactoryMachineState>? StartRequested;
     public event Action<FactoryMachineState>? RetrieveRequested;
+    public event Action<FactoryMachineState>? LoadRequested;
     public event Action<FactoryMachineState>? Selected;
 
     public MachineModuleView(FactoryMachineState machine)
@@ -74,6 +75,7 @@ public sealed partial class MachineModuleView : PanelContainer
         slotTitle.AddThemeFontSizeOverride("font_size", 12);
         column.AddChild(slotTitle);
         BufferSlot.Configure(machine.SlotName, machine.Kind == FactoryMachineKind.ProcessingTable ? "工序牌" : "构件牌");
+        BufferSlot.Clicked += () => LoadRequested?.Invoke(Machine);
         column.AddChild(BufferSlot);
 
         _requirement.HorizontalAlignment = HorizontalAlignment.Center;

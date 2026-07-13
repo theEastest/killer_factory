@@ -34,7 +34,8 @@ public sealed class GroundExploration : FactoryComponentCard
 public sealed class BiologicalExcision : FactoryComponentCard
 {
     private bool _upgraded;
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(4, ValueProp.Move)];
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+        [new DamageVar(4, ValueProp.Move), new IntVar("MaterialCount", 1)];
     public override IEnumerable<FactoryEffectSegment> GetNativeEffectSegments() =>
         [new() { Kind = FactoryEffectKind.Damage, Amount = (int)DynamicVars.Damage.BaseValue }];
     public BiologicalExcision() : base(1, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true, "producer") { }
@@ -47,7 +48,12 @@ public sealed class BiologicalExcision : FactoryComponentCard
             await FactoryCardActions.AddGeneratedCardToHand<CompoundMaterial>(Owner, _upgraded ? 2 : 1);
         await FactoryFusionService.ResolveFusedEffects(this, context, play);
     }
-    protected override void OnUpgrade() { _upgraded = true; DynamicVars.Damage.UpgradeValueBy(2); }
+    protected override void OnUpgrade()
+    {
+        _upgraded = true;
+        DynamicVars.Damage.UpgradeValueBy(2);
+        if (DynamicVars.TryGetValue("MaterialCount", out var count)) count.UpgradeValueBy(1);
+    }
 }
 
 [RegisterCard(typeof(KillerFactoryCardPool))]
@@ -55,7 +61,8 @@ public sealed class Accumulate : FactoryComponentCard
 {
     private int _materials = 2;
     public override bool GainsBlock => true;
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(12, ValueProp.Move)];
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+        [new BlockVar(12, ValueProp.Move), new IntVar("MaterialCount", 2)];
     public override IEnumerable<FactoryEffectSegment> GetNativeEffectSegments() =>
         [new() { Kind = FactoryEffectKind.Block, Amount = (int)DynamicVars.Block.BaseValue }];
     public Accumulate() : base(2, CardType.Skill, CardRarity.Common, TargetType.Self, true, "producer") { }
@@ -66,7 +73,12 @@ public sealed class Accumulate : FactoryComponentCard
         await FactoryCardActions.AddGeneratedCard<CompoundMaterial>(Owner, PileType.Draw, _materials);
         await FactoryFusionService.ResolveFusedEffects(this, context, play);
     }
-    protected override void OnUpgrade() { _materials = 3; DynamicVars.Block.UpgradeValueBy(4); }
+    protected override void OnUpgrade()
+    {
+        _materials = 3;
+        DynamicVars.Block.UpgradeValueBy(4);
+        if (DynamicVars.TryGetValue("MaterialCount", out var count)) count.UpgradeValueBy(1);
+    }
 }
 
 [RegisterCard(typeof(KillerFactoryCardPool))]
@@ -152,6 +164,7 @@ public sealed class BufferPlate : FactoryComponentCard
 public sealed class UniversalReplacement : FactoryComponentCard
 {
     private int _count = 1;
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new IntVar("TransformCount", 1)];
     public override IEnumerable<CardKeyword> CanonicalKeywords => IsUpgraded
         ? [FactoryKeywords.PermanentComponent, CardKeyword.Retain]
         : [FactoryKeywords.PermanentComponent];
@@ -167,5 +180,10 @@ public sealed class UniversalReplacement : FactoryComponentCard
         foreach (var card in selected)
             await CardCmd.TransformTo<UniversalMaterial>(card, CardPreviewStyle.None);
     }
-    protected override void OnUpgrade() { _count = 2; AddKeyword(CardKeyword.Retain); }
+    protected override void OnUpgrade()
+    {
+        _count = 2;
+        if (DynamicVars.TryGetValue("TransformCount", out var count)) count.UpgradeValueBy(1);
+        AddKeyword(CardKeyword.Retain);
+    }
 }

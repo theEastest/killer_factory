@@ -84,6 +84,7 @@ public sealed class ThermalCore : FactoryComponentCard
 public sealed class QuickLoad : FactoryComponentCard
 {
     private int _draw = 3;
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new IntVar("Draw", 3)];
     public override IEnumerable<CardKeyword> CanonicalKeywords => [FactoryKeywords.DisposableComponent, CardKeyword.Exhaust];
     public override IEnumerable<FactoryEffectSegment> GetNativeEffectSegments() => [];
     public QuickLoad() : base(0, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "producer") { }
@@ -92,7 +93,11 @@ public sealed class QuickLoad : FactoryComponentCard
         await CardPileCmd.Draw(context, _draw, Owner);
         await FactoryFusionService.ResolveFusedEffects(this, context, play);
     }
-    protected override void OnUpgrade() => _draw = 4;
+    protected override void OnUpgrade()
+    {
+        _draw = 4;
+        if (DynamicVars.TryGetValue("Draw", out var draw)) draw.UpgradeValueBy(1);
+    }
 }
 
 [RegisterCard(typeof(KillerFactoryCardPool))]

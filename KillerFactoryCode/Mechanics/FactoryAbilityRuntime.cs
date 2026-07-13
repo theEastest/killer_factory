@@ -12,7 +12,8 @@ namespace KillerFactory.Mechanics;
 
 public static class FactoryAbilityRuntime
 {
-    private static readonly Dictionary<CardModel, int> SpringOriginalCosts = new();
+    private static readonly Dictionary<CardModel, int> TemporaryOriginalCosts = new();
+    private static readonly HashSet<CardModel> PendingExternalSpringReturns = [];
 
     public static void OnTurnStarted(PlayerTurnStartedEvent evt)
     {
@@ -49,17 +50,27 @@ public static class FactoryAbilityRuntime
     public static void OnCardMoved(CardMovedBetweenPilesEvent evt)
     {
         if (evt.CombatState is null) return;
+
+        if (PendingExternalSpringReturns.Contains(evt.Card) && evt.PreviousPile == PileType.Play)
+        {
+            // Mechanical-arm plays are finalized by FactoryLinePanel after AutoPlay returns,
+            // otherwise the panel could race this callback and put the card back in its cache.
+            if (FactoryLinePanel.Active?.IsExecutingCard(evt.Card) != true)
+            {
+                PendingExternalSpringReturns.Remove(evt.Card);
+                if (evt.Card.Pile?.Type == PileType.Discard &&
+                    PileType.Hand.GetPile(evt.Card.Owner).Cards.Count < RitsuLibFramework.GetMaxHandSize(evt.Card.Owner))
+                {
+                    TaskHelper.RunSafely(CardPileCmd.Add(evt.Card, PileType.Hand));
+                }
+            }
+        }
+
         if (evt.Card.Pile?.Type != PileType.Hand) return;
         var state = FactoryCombatState.For(evt.CombatState);
 
         if (evt.Card.TryGetCapability<FactoryCardStateCapability>(out var capability))
         {
-            if (capability.HasExternalSpring && !SpringOriginalCosts.ContainsKey(evt.Card))
-            {
-                var cost = evt.Card.EnergyCost.GetWithModifiers(CostModifiers.None);
-                SpringOriginalCosts[evt.Card] = cost;
-                evt.Card.EnergyCost.SetCustomBaseCost(0);
-            }
             if (capability.IsSticky)
             {
                 var copies = PileType.Draw.GetPile(evt.Card.Owner).Cards
@@ -67,9 +78,9 @@ public static class FactoryAbilityRuntime
                 for (var index = 0; index < copies.Count; index++)
                 {
                     var copy = copies[index];
-                    if (index == 0 && capability.StickyFirstCopyFree && !SpringOriginalCosts.ContainsKey(copy))
+                    if (index == 0 && capability.StickyFirstCopyFree && !TemporaryOriginalCosts.ContainsKey(copy))
                     {
-                        SpringOriginalCosts[copy] = copy.EnergyCost.GetWithModifiers(CostModifiers.None);
+                        TemporaryOriginalCosts[copy] = copy.EnergyCost.GetWithModifiers(CostModifiers.None);
                         copy.EnergyCost.SetCustomBaseCost(0);
                     }
                     TaskHelper.RunSafely(CardPileCmd.Add(copy, PileType.Hand));
@@ -88,12 +99,34 @@ public static class FactoryAbilityRuntime
     public static void OnCardPlayed(CardPlayedEvent evt)
     {
         var card = evt.CardPlay.Card;
-        if (SpringOriginalCosts.Remove(card, out var originalCost))
+        if (TemporaryOriginalCosts.Remove(card, out var originalCost))
             card.EnergyCost.SetCustomBaseCost(originalCost);
-        if (card.TryGetCapability<FactoryCardStateCapability>(out var capability) && capability.IsStreamlined)
+        if (!card.TryGetCapability<FactoryCardStateCapability>(out var capability)) return;
+
+        if (capability.IsStreamlined)
         {
             var current = card.EnergyCost.GetWithModifiers(CostModifiers.None);
             card.EnergyCost.SetCustomBaseCost(Math.Max(0, current - 1));
         }
+
+        if (capability.HasExternalSpring)
+            PendingExternalSpringReturns.Add(card);
+    }
+
+    public static async Task<bool> ResolveExternalSpringAfterMachinePlayAsync(CardModel card)
+    {
+        if (!PendingExternalSpringReturns.Remove(card)) return false;
+        if (!card.TryGetCapability<FactoryCardStateCapability>(out var capability) || !capability.HasExternalSpring)
+            return false;
+
+        // Exhaust/removed cards are broken or scrapped and must not be resurrected.
+        if (card.Pile?.Type is PileType.Exhaust or null) return true;
+
+        if (PileType.Hand.GetPile(card.Owner).Cards.Count < RitsuLibFramework.GetMaxHandSize(card.Owner))
+            await CardPileCmd.Add(card, PileType.Hand);
+        else if (card.Pile?.Type != PileType.Discard)
+            await CardPileCmd.Add(card, PileType.Discard);
+
+        return true;
     }
 }

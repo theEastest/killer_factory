@@ -1,9 +1,14 @@
 using Godot;
+using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Multiplayer;
+using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Helpers;
+using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using KillerFactory.Mechanics;
@@ -30,7 +35,6 @@ public sealed partial class FactoryLinePanel : Control, INodeAttachmentSetup
     private Label _lastAction = null!;
     private PanelContainer _detailPopup = null!;
     private Label _detailText = null!;
-    private CardModel? _draggedCard;
     private FactoryMachineState? _selectedMachine;
     private FactoryMachineState? _executingMachine;
     private int _renderedMachineCount = -1;
@@ -235,14 +239,10 @@ public sealed partial class FactoryLinePanel : Control, INodeAttachmentSetup
 
         _capacity.Text = $"{state.Machines.Count}/{FactoryCombatState.MaximumMachineSlots}";
         _lastAction.Text = state.LastAction;
-        var mouse = GetViewport().GetMousePosition();
-        var handCount = _draggedCard is null ? 0 : PileType.Hand.GetPile(_draggedCard.Owner).Cards.Count;
-        var handFull = _draggedCard is not null && handCount >= RitsuLibFramework.GetMaxHandSize(_draggedCard.Owner);
         foreach (var module in _modules)
         {
             var executing = ReferenceEquals(_executingMachine, module.Machine);
             module.Refresh(ValidateStart(module.Machine, executing), executing, ReferenceEquals(_selectedMachine, module.Machine));
-            module.SetDragFeedback(_draggedCard, mouse, handFull && module.Machine.CachedCard is not null);
         }
         RefreshDetail();
     }
@@ -255,6 +255,7 @@ public sealed partial class FactoryLinePanel : Control, INodeAttachmentSetup
         foreach (var machine in state.Machines.Take(FactoryCombatState.MaximumMachineSlots))
         {
             var module = new MachineModuleView(machine);
+            module.LoadRequested += requested => TaskHelper.RunSafely(SelectCardToLoadAsync(requested));
             module.StartRequested += requested => TaskHelper.RunSafely(ActivateAsync(requested));
             module.RetrieveRequested += requested => TaskHelper.RunSafely(RetrieveAsync(requested));
             module.Selected += selected => SelectMachine(ReferenceEquals(_selectedMachine, selected) ? null : selected);
@@ -286,33 +287,83 @@ public sealed partial class FactoryLinePanel : Control, INodeAttachmentSetup
         _renderedMachineCount = state.Machines.Count;
     }
 
-    public void BeginCardDrag(CardModel card) => _draggedCard = card;
-    public void EndCardDrag() => _draggedCard = null;
-
-    public bool TryGetDropMachine(Vector2 screenPosition, CardModel card, out FactoryMachineState machine)
-    {
-        foreach (var module in _modules)
-        {
-            if (!module.BufferSlot.GetGlobalRect().HasPoint(screenPosition) || !module.Machine.CanAccept(card)) continue;
-            var hand = PileType.Hand.GetPile(card.Owner);
-            if (module.Machine.CachedCard is not null && hand.Cards.Count >= RitsuLibFramework.GetMaxHandSize(card.Owner))
-                break;
-            machine = module.Machine;
-            return true;
-        }
-        machine = null!;
-        return false;
-    }
-
-    public void QueueLoad(FactoryMachineState machine, CardModel card)
-    {
-        EndCardDrag();
-        if (!_busy) TaskHelper.RunSafely(LoadAsync(machine, card));
-    }
-
     public void QueueActivate(FactoryMachineState machine)
     {
         if (!_busy) TaskHelper.RunSafely(ActivateAsync(machine));
+    }
+
+    public bool IsExecutingCard(CardModel card) =>
+        ReferenceEquals(_executingMachine?.CachedCard, card);
+
+    // Programmatic loading is still used by automation cards; player interaction uses
+    // SelectCardToLoadAsync exclusively.
+    public void QueueLoad(FactoryMachineState machine, CardModel card)
+    {
+        if (!_busy) TaskHelper.RunSafely(LoadAsync(machine, card));
+    }
+
+    private async Task SelectCardToLoadAsync(FactoryMachineState machine)
+    {
+        var state = FactoryCombatState.Current;
+        var localPlayerId = LocalContext.NetId;
+        var owner = localPlayerId.HasValue
+            ? state?.CombatState.Players.FirstOrDefault(player => player.NetId == localPlayerId.Value)
+            : null;
+        owner ??= state?.CombatState.Players.FirstOrDefault();
+        if (_busy || state is null || owner is null || !localPlayerId.HasValue ||
+            machine.Kind == FactoryMachineKind.Power)
+            return;
+
+        // This click originates outside a running GameAction.  HookPlayerChoiceContext
+        // creates and queues a synchronized action when the selection UI is requested.
+        var choiceContext = new HookPlayerChoiceContext(
+            owner, localPlayerId.Value, GameActionType.CombatPlayPhaseOnly);
+        var selectionTask = SelectCardToLoadCoreAsync(machine, state, owner, choiceContext);
+        await choiceContext.AssignTaskAndWaitForPauseOrCompletion(selectionTask);
+        await choiceContext.WaitForCompletion();
+    }
+
+    private async Task SelectCardToLoadCoreAsync(
+        FactoryMachineState machine,
+        FactoryCombatState state,
+        Player owner,
+        PlayerChoiceContext choiceContext)
+    {
+        var candidates = PileType.Hand.GetPile(owner).Cards
+            .Where(machine.CanAccept)
+            .ToList();
+        if (candidates.Count == 0)
+        {
+            var accepted = machine.Kind switch
+            {
+                FactoryMachineKind.ProcessingTable => "工序牌",
+                FactoryMachineKind.Decomposer => "原料或废料",
+                FactoryMachineKind.Storage => "卡牌",
+                _ => "构件牌",
+            };
+            machine.ShowMessage($"手牌中没有可装入的{accepted}");
+            state.Record($"{machine.Name}：手牌中没有可装入的{accepted}");
+            return;
+        }
+
+        CardModel? selected;
+        _busy = true;
+        try
+        {
+            var prefs = new CardSelectorPrefs(
+                new LocString("card_selection", "KILLER_FACTORY_SELECT_MACHINE_LOAD"), 1)
+            {
+                Cancelable = true,
+                RequireManualConfirmation = true,
+            };
+            selected = (await CardSelectCmd.FromSimpleGrid(
+                    choiceContext, candidates, owner, prefs))
+                .FirstOrDefault();
+        }
+        finally { _busy = false; }
+
+        if (selected is not null)
+            await LoadAsync(machine, selected);
     }
 
     public async Task<int> ActivateAllAsync()
@@ -351,14 +402,6 @@ public sealed partial class FactoryLinePanel : Control, INodeAttachmentSetup
     private async Task LoadAsync(FactoryMachineState machine, CardModel card)
     {
         if (_busy || !machine.CanAccept(card) || card.Pile?.Type != PileType.Hand) return;
-        var hand = PileType.Hand.GetPile(card.Owner);
-        if (machine.CachedCard is not null && hand.Cards.Count >= RitsuLibFramework.GetMaxHandSize(card.Owner))
-        {
-            var state = FactoryCombatState.For(card.Owner.Creature.CombatState!);
-            state.ReportFailure(machine, MachineStartResult.Fail(MachineStartFailureReason.HandFull, "手牌已满，无法替换缓存牌"));
-            return;
-        }
-
         var shouldAutoStart = false;
         _busy = true;
         try
@@ -444,6 +487,7 @@ public sealed partial class FactoryLinePanel : Control, INodeAttachmentSetup
             await PayChargeAsync(machine, card, cost);
             await CardCmd.AutoPlay(new ThrowingPlayerChoiceContext(), card, null, skipCardPileVisuals: true);
             if (CombatManager.Instance.IsOverOrEnding) machine.CachedCard = null;
+            else if (await FactoryAbilityRuntime.ResolveExternalSpringAfterMachinePlayAsync(card)) machine.CachedCard = null;
             else if (card.Pile?.Type != PileType.Exhaust) await CardPileCmd.Add(card, FactoryMachineCachePile.PileType);
             else machine.CachedCard = null;
             FactoryCombatState.For(card.Owner.Creature.CombatState!).Record($"{machine.Name} 启动：{card.Title}");

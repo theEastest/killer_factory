@@ -20,14 +20,17 @@ public sealed partial class MachineBufferSlotView : PanelContainer
     private readonly Label _title = new();
     private readonly Label _markers = new();
     private readonly Label _hint = new();
+    private readonly Button _clickTarget = new();
     private readonly StyleBoxFlat _style = new();
-    private string _emptyHint = "拖入构件";
+    private string _emptyHint = "点击选择构件";
+
+    public event Action? Clicked;
 
     public MachineBufferSlotView()
     {
         CustomMinimumSize = new Vector2(112f, 52f);
         MouseFilter = MouseFilterEnum.Stop;
-        TooltipText = "拖入构件以装填机械缓存";
+        TooltipText = "点击并从手牌中选择要装填的牌";
 
         _style.BgColor = new Color("172c35e8");
         _style.BorderColor = new Color("4d8995");
@@ -63,18 +66,29 @@ public sealed partial class MachineBufferSlotView : PanelContainer
         _markers.AddThemeFontSizeOverride("font_size", 11);
         text.AddChild(_markers);
 
-        _hint.Text = "拖入构件";
+        _hint.Text = "点击选择构件";
         _hint.HorizontalAlignment = HorizontalAlignment.Center;
         _hint.VerticalAlignment = VerticalAlignment.Center;
         _hint.AddThemeColorOverride("font_color", new Color("8db3bb"));
         _hint.AddThemeFontSizeOverride("font_size", 14);
         root.AddChild(_hint);
+
+        // A real Button is used as a transparent hit target.  This is more reliable than
+        // relying on PanelContainer.GuiInput through nested combat UI controls.
+        _clickTarget.Flat = true;
+        _clickTarget.FocusMode = FocusModeEnum.None;
+        _clickTarget.MouseDefaultCursorShape = CursorShape.PointingHand;
+        _clickTarget.TooltipText = TooltipText;
+        _clickTarget.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        _clickTarget.Pressed += () => Clicked?.Invoke();
+        AddChild(_clickTarget);
     }
 
     public void Configure(string slotName, string acceptedCardName)
     {
-        _emptyHint = $"拖入{acceptedCardName}";
-        TooltipText = $"{slotName}：只接受{acceptedCardName}";
+        _emptyHint = $"点击选择{acceptedCardName}";
+        TooltipText = $"{slotName}：点击选择手牌中的{acceptedCardName}";
+        _clickTarget.TooltipText = TooltipText;
         if (_hint.Visible) _hint.Text = _emptyHint;
     }
 

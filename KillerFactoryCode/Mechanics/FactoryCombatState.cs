@@ -101,6 +101,8 @@ public sealed class FactoryCombatState
     public static FactoryCombatState? Current { get; private set; }
     public static void ClearCurrent() => Current = null;
 
+    public ICombatState CombatState { get; private set; } = null!;
+
     public List<FactoryMachineState> Machines { get; } = [];
     public string LastAction { get; private set; } = "产线待机";
     public bool DelayedAnalysis { get; set; }
@@ -124,6 +126,7 @@ public sealed class FactoryCombatState
     public static FactoryCombatState For(ICombatState combatState)
     {
         var state = States.GetValue(combatState, static _ => new FactoryCombatState());
+        state.CombatState = combatState;
         Current = state;
         return state;
     }

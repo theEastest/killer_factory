@@ -3,6 +3,8 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization;
+using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using MegaCrit.Sts2.Core.ValueProps;
 using KillerFactory.Characters;
 using KillerFactory.Mechanics;
 using STS2RitsuLib;
@@ -15,6 +17,7 @@ namespace KillerFactory.Cards;
 public sealed class SmartRetrieval : FactoryCardTemplate
 {
     private int _draw = 3;
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new IntVar("Draw", 3)];
     public SmartRetrieval() : base(1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "producer") { }
     protected override async Task OnPlay(PlayerChoiceContext context, CardPlay play)
     {
@@ -28,7 +31,11 @@ public sealed class SmartRetrieval : FactoryCardTemplate
         }
         await CardPileCmd.Draw(context, _draw, Owner);
     }
-    protected override void OnUpgrade() => _draw = 4;
+    protected override void OnUpgrade()
+    {
+        _draw = 4;
+        if (DynamicVars.TryGetValue("Draw", out var draw)) draw.UpgradeValueBy(1);
+    }
 }
 
 [RegisterCard(typeof(KillerFactoryCardPool))]
@@ -85,15 +92,15 @@ public sealed class StrongAttractor : FactoryCardTemplate
 public sealed class Attractor : FactoryCardTemplate
 {
     public override bool GainsBlock => true;
-    private int _block = 3;
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(3, ValueProp.Move)];
     public Attractor() : base(0, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "producer") { }
     protected override async Task OnPlay(PlayerChoiceContext context, CardPlay play)
     {
-        await CreatureCmd.GainBlock(Owner.Creature, new MegaCrit.Sts2.Core.Localization.DynamicVars.BlockVar(_block, MegaCrit.Sts2.Core.ValueProps.ValueProp.Move), play);
+        await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, play);
         await CardPileCmd.Draw(context, 1, Owner);
         var state = FactoryCombatState.For(Owner.Creature.CombatState!);
         state.Attractor = true;
         state.AttractorCard = this;
     }
-    protected override void OnUpgrade() => _block = 5;
+    protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(2);
 }

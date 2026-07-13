@@ -18,6 +18,7 @@ namespace KillerFactory.Cards;
 public sealed class Filter : FactoryComponentCard
 {
     private int _draw = 3;
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new IntVar("Draw", 3)];
     public override IEnumerable<FactoryEffectSegment> GetNativeEffectSegments() => [];
     public Filter() : base(1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "producer") { }
     protected override async Task OnPlay(PlayerChoiceContext context, CardPlay play)
@@ -35,7 +36,11 @@ public sealed class Filter : FactoryComponentCard
         }
         await FactoryFusionService.ResolveFusedEffects(this, context, play);
     }
-    protected override void OnUpgrade() => _draw = 4;
+    protected override void OnUpgrade()
+    {
+        _draw = 4;
+        if (DynamicVars.TryGetValue("Draw", out var draw)) draw.UpgradeValueBy(1);
+    }
 }
 
 [RegisterCard(typeof(KillerFactoryCardPool))]
@@ -155,10 +160,14 @@ public sealed class AutoStartProtocol : FactoryCardTemplate
 [RegisterCard(typeof(KillerFactoryCardPool))]
 public sealed class SelfStartingBus : FactoryCardTemplate
 {
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new IntVar("Threshold", 3)];
     public SelfStartingBus() : base(2, CardType.Power, CardRarity.Rare, TargetType.Self, true, "producer") { }
     protected override Task OnPlay(PlayerChoiceContext context, CardPlay play)
     { FactoryCombatState.For(Owner.Creature.CombatState!).SelfStartingBusThreshold = IsUpgraded ? 2 : 3; return Task.CompletedTask; }
-    protected override void OnUpgrade() { }
+    protected override void OnUpgrade()
+    {
+        if (DynamicVars.TryGetValue("Threshold", out var threshold)) threshold.UpgradeValueBy(-1);
+    }
 }
 
 [RegisterCard(typeof(KillerFactoryCardPool))]
@@ -204,10 +213,14 @@ public sealed class VirusMother : FactoryComponentCard
 [RegisterCard(typeof(KillerFactoryCardPool))]
 public sealed class RecursiveProcessing : FactoryCardTemplate
 {
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new IntVar("Threshold", 3)];
     public RecursiveProcessing() : base(2, CardType.Power, CardRarity.Rare, TargetType.Self, true, "process") { }
     protected override Task OnPlay(PlayerChoiceContext context, CardPlay play)
     { var s = FactoryCombatState.For(Owner.Creature.CombatState!); s.RecursiveProcessing = true; s.RecursiveProcessingThreshold = IsUpgraded ? 2 : 3; return Task.CompletedTask; }
-    protected override void OnUpgrade() { }
+    protected override void OnUpgrade()
+    {
+        if (DynamicVars.TryGetValue("Threshold", out var threshold)) threshold.UpgradeValueBy(-1);
+    }
 }
 
 [RegisterCard(typeof(KillerFactoryCardPool))]
