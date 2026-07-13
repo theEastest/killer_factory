@@ -10,26 +10,37 @@ namespace KillerFactory.Mechanics;
 
 public static class FactoryFusionService
 {
+    public static async Task<bool> TryBeginProcessingAsync(FactoryComponentCard card)
+    {
+        var state = card.GetOrCreateCapability<FactoryCardStateCapability>();
+        if (!card.Keywords.Contains(FactoryKeywords.FragileComponent) || state.ProcessCount <= 0)
+            return true;
+
+        await CardPileCmd.Add(card, PileType.Exhaust);
+        if (state.IsEfficient)
+        {
+            await FactoryCardActions.AddGeneratedCardToHand<Cards.UniversalMaterial>(card.Owner);
+            if (state.EfficientDraw)
+                await CardPileCmd.Draw(new ThrowingPlayerChoiceContext(), 1, card.Owner);
+        }
+        else
+        {
+            await FactoryCardActions.AddScrapToHand(card.Owner);
+        }
+
+        FactoryCombatState.For(card.Owner.Creature.CombatState!).Record("脆弱构件在再次加工前损坏");
+        return false;
+    }
+
     public static async Task<bool> FuseAsync(
         FactoryComponentCard body,
         FactoryComponentCard material,
         bool upgradeFirst)
     {
-        var bodyState = body.GetOrCreateCapability<FactoryCardStateCapability>();
-        if (body.Keywords.Contains(FactoryKeywords.FragileComponent) && bodyState.ProcessCount > 0)
-        {
-            await CardPileCmd.Add(body, PileType.Exhaust);
-            if (bodyState.IsEfficient)
-            {
-                await FactoryCardActions.AddGeneratedCardToHand<Cards.UniversalMaterial>(body.Owner);
-                if (bodyState.EfficientDraw)
-                    await CardPileCmd.Draw(new ThrowingPlayerChoiceContext(), 1, body.Owner);
-            }
-            else
-                await FactoryCardActions.AddScrapToHand(body.Owner);
-            FactoryCombatState.For(body.Owner.Creature.CombatState!).Record("脆弱构件在再次加工前损坏");
+        if (!await TryBeginProcessingAsync(body))
             return false;
-        }
+
+        var bodyState = body.GetOrCreateCapability<FactoryCardStateCapability>();
 
         if (upgradeFirst)
         {

@@ -19,15 +19,32 @@ public abstract class SelectComponentProcedure : FactoryCardTemplate, IFactoryPr
     protected virtual bool IsLegal(FactoryComponentCard card) => true;
     protected abstract void Apply(FactoryComponentCard card);
     protected virtual string SelectionKey => "KILLER_FACTORY_SELECT_PROCESS_TARGET";
-    protected override async Task OnPlay(PlayerChoiceContext context, CardPlay play) => await ExecuteProcedureAsync(context);
-    public virtual async Task<bool> ExecuteProcedureAsync(PlayerChoiceContext context)
+    protected override async Task OnPlay(PlayerChoiceContext context, CardPlay play) =>
+        await ExecuteProcedureAsync(context);
+
+    private List<FactoryComponentCard> GetCandidates(bool fromProcessingTable)
     {
-        var candidates = TargetPile.GetPile(Owner).Cards.OfType<FactoryComponentCard>().Where(IsLegal).ToList();
+        var pile = fromProcessingTable ? PileType.Hand : TargetPile;
+        return pile.GetPile(Owner).Cards.OfType<FactoryComponentCard>().Where(IsLegal).ToList();
+    }
+
+    public bool HasLegalTargets(bool fromProcessingTable = false) => GetCandidates(fromProcessingTable).Count > 0;
+
+    public virtual async Task<bool> ExecuteProcedureAsync(
+        PlayerChoiceContext context,
+        bool fromProcessingTable = false,
+        Func<Task<bool>>? commitResources = null)
+    {
+        var candidates = GetCandidates(fromProcessingTable);
         if (candidates.Count == 0) return false;
         var prefs = new CardSelectorPrefs(new LocString("card_selection", SelectionKey), 1)
         { Cancelable = true, RequireManualConfirmation = true };
         var selected = (await CardSelectCmd.FromSimpleGrid(context, candidates, Owner, prefs)).OfType<FactoryComponentCard>().FirstOrDefault();
         if (selected is null) return false;
+        var expectedPile = fromProcessingTable ? PileType.Hand : TargetPile;
+        if (selected.Pile?.Type != expectedPile || !IsLegal(selected)) return false;
+        if (commitResources is not null && !await commitResources()) return false;
+        if (!await FactoryFusionService.TryBeginProcessingAsync(selected)) return true;
         Apply(selected);
         return true;
     }
@@ -41,11 +58,8 @@ public sealed class StandardCalibration : SelectComponentProcedure
     protected override IEnumerable<DynamicVar> CanonicalVars => [new IntVar("Amount", 5)];
     protected override PileType TargetPile => _drawPile ? PileType.Draw : PileType.Hand;
     public StandardCalibration() : base(1, CardRarity.Common) { }
-    protected override async Task OnPlay(PlayerChoiceContext context, CardPlay play)
-    {
-        if (!FactoryProcedureRequirements.CanPay(this)) return;
-        if (await ExecuteProcedureAsync(context)) await FactoryProcedureRequirements.PayAsync(this);
-    }
+    protected override bool IsLegal(FactoryComponentCard card) =>
+        card.GetNativeEffectSegments().Any(effect => effect.Kind is FactoryEffectKind.Damage or FactoryEffectKind.Block);
     protected override void Apply(FactoryComponentCard card)
     {
         var segment = card.GetNativeEffectSegments().FirstOrDefault(effect => effect.Kind is FactoryEffectKind.Damage or FactoryEffectKind.Block);
@@ -155,8 +169,16 @@ public sealed class OverallCasting : FactoryCardTemplate, IFactoryProcedureCard
 {
     public override IEnumerable<CardKeyword> CanonicalKeywords => [FactoryKeywords.Procedure, CardKeyword.Exhaust];
     public OverallCasting() : base(2, CardType.Skill, CardRarity.Rare, TargetType.Self, true, "process") { }
-    protected override async Task OnPlay(PlayerChoiceContext context, CardPlay play) => await ExecuteProcedureAsync(context);
-    public async Task<bool> ExecuteProcedureAsync(PlayerChoiceContext context)
+    protected override async Task OnPlay(PlayerChoiceContext context, CardPlay play) =>
+        await ExecuteProcedureAsync(context);
+
+    public bool HasLegalTargets(bool fromProcessingTable = false) =>
+        PileType.Hand.GetPile(Owner).Cards.OfType<FactoryComponentCard>().Take(2).Count() == 2;
+
+    public async Task<bool> ExecuteProcedureAsync(
+        PlayerChoiceContext context,
+        bool fromProcessingTable = false,
+        Func<Task<bool>>? commitResources = null)
     {
         var components = PileType.Hand.GetPile(Owner).Cards.OfType<FactoryComponentCard>().ToList();
         if (components.Count < 2) return false;
@@ -164,16 +186,25 @@ public sealed class OverallCasting : FactoryCardTemplate, IFactoryProcedureCard
         { Cancelable = true, RequireManualConfirmation = true };
         var body = (await CardSelectCmd.FromSimpleGrid(context, components, Owner, bodyPrefs)).OfType<FactoryComponentCard>().FirstOrDefault();
         if (body is null) return false;
+        var selectedMaterials = new List<FactoryComponentCard>();
         for (var i = 0; i < 3; i++)
         {
-            var materials = PileType.Hand.GetPile(Owner).Cards.OfType<FactoryComponentCard>().Where(card => !ReferenceEquals(card, body)).ToList();
+            var materials = PileType.Hand.GetPile(Owner).Cards.OfType<FactoryComponentCard>()
+                .Where(card => !ReferenceEquals(card, body) && !selectedMaterials.Contains(card)).ToList();
             if (materials.Count == 0) break;
             var prefs = new CardSelectorPrefs(new LocString("card_selection", "KILLER_FACTORY_SELECT_FUSION_MATERIAL"), 1)
             { Cancelable = true, RequireManualConfirmation = true };
             var material = (await CardSelectCmd.FromSimpleGrid(context, materials, Owner, prefs)).OfType<FactoryComponentCard>().FirstOrDefault();
             if (material is null) break;
-            await FactoryFusionService.FuseAsync(body, material, false);
+            selectedMaterials.Add(material);
         }
+
+        if (selectedMaterials.Count == 0) return false;
+        var hand = PileType.Hand.GetPile(Owner);
+        if (!hand.Cards.Contains(body) || selectedMaterials.Any(material => !hand.Cards.Contains(material))) return false;
+        if (commitResources is not null && !await commitResources()) return false;
+        foreach (var material in selectedMaterials)
+            if (!await FactoryFusionService.FuseAsync(body, material, false)) break;
         return true;
     }
     protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);

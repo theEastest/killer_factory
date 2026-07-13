@@ -232,7 +232,7 @@ public sealed class MasterControlCore : FactoryComponentCard
     public MasterControlCore() : base(3, CardType.Skill, CardRarity.Rare, TargetType.Self, true, "producer") { }
     protected override async Task OnPlay(PlayerChoiceContext context, CardPlay play)
     {
-        var count = FactoryLinePanel.Active is { } panel ? await panel.ActivateAllAsync() : 0;
+        var count = FactoryLinePanel.Active is { } panel ? await panel.ActivateAllAsync(context) : 0;
         if (count > 0)
             await CreatureCmd.GainBlock(Owner.Creature, new BlockVar(count * 2, ValueProp.Move), play);
         if (IsUpgraded && count >= 2) await CardPileCmd.Draw(context, count / 2, Owner);

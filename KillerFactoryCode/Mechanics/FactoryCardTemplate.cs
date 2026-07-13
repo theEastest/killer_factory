@@ -6,7 +6,12 @@ namespace KillerFactory.Mechanics;
 
 public interface IFactoryProcedureCard
 {
-    Task<bool> ExecuteProcedureAsync(PlayerChoiceContext choiceContext);
+    bool HasLegalTargets(bool fromProcessingTable = false);
+
+    Task<bool> ExecuteProcedureAsync(
+        PlayerChoiceContext choiceContext,
+        bool fromProcessingTable = false,
+        Func<Task<bool>>? commitResources = null);
 }
 
 public abstract class FactoryCardTemplate : ModCardTemplate

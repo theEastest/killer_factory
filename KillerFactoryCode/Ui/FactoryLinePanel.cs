@@ -256,7 +256,7 @@ public sealed partial class FactoryLinePanel : Control, INodeAttachmentSetup
         {
             var module = new MachineModuleView(machine);
             module.LoadRequested += requested => TaskHelper.RunSafely(SelectCardToLoadAsync(requested));
-            module.StartRequested += requested => TaskHelper.RunSafely(ActivateAsync(requested));
+            module.StartRequested += requested => TaskHelper.RunSafely(ActivateFromPlayerAsync(requested));
             module.RetrieveRequested += requested => TaskHelper.RunSafely(RetrieveAsync(requested));
             module.Selected += selected => SelectMachine(ReferenceEquals(_selectedMachine, selected) ? null : selected);
             _machineRow.AddChild(module);
@@ -290,6 +290,32 @@ public sealed partial class FactoryLinePanel : Control, INodeAttachmentSetup
     public void QueueActivate(FactoryMachineState machine)
     {
         if (!_busy) TaskHelper.RunSafely(ActivateAsync(machine));
+    }
+
+    private async Task ActivateFromPlayerAsync(FactoryMachineState machine)
+    {
+        if (machine.Kind != FactoryMachineKind.ProcessingTable)
+        {
+            await ActivateAsync(machine);
+            return;
+        }
+
+        var state = FactoryCombatState.Current;
+        var localPlayerId = LocalContext.NetId;
+        var owner = localPlayerId.HasValue
+            ? state?.CombatState.Players.FirstOrDefault(player => player.NetId == localPlayerId.Value)
+            : null;
+        owner ??= state?.CombatState.Players.FirstOrDefault();
+        if (_busy || state is null || owner is null || !localPlayerId.HasValue)
+            return;
+
+        // Processing-table activation originates from a UI button rather than a running
+        // GameAction.  It therefore needs the same synchronized choice context as loading.
+        var choiceContext = new HookPlayerChoiceContext(
+            owner, localPlayerId.Value, GameActionType.CombatPlayPhaseOnly);
+        var activationTask = ActivateAsync(machine, choiceContext);
+        await choiceContext.AssignTaskAndWaitForPauseOrCompletion(activationTask);
+        await choiceContext.WaitForCompletion();
     }
 
     public bool IsExecutingCard(CardModel card) =>
@@ -366,7 +392,7 @@ public sealed partial class FactoryLinePanel : Control, INodeAttachmentSetup
             await LoadAsync(machine, selected);
     }
 
-    public async Task<int> ActivateAllAsync()
+    public async Task<int> ActivateAllAsync(PlayerChoiceContext? choiceContext = null)
     {
         var state = FactoryCombatState.Current;
         if (state is null) return 0;
@@ -374,7 +400,7 @@ public sealed partial class FactoryLinePanel : Control, INodeAttachmentSetup
         foreach (var machine in state.Machines.ToList())
         {
             if (!ValidateStart(machine, false).Success) continue;
-            await ActivateAsync(machine);
+            await ActivateAsync(machine, choiceContext);
             count++;
         }
         return count;
@@ -446,7 +472,7 @@ public sealed partial class FactoryLinePanel : Control, INodeAttachmentSetup
         finally { _busy = false; }
     }
 
-    private async Task ActivateAsync(FactoryMachineState machine)
+    private async Task ActivateAsync(FactoryMachineState machine, PlayerChoiceContext? choiceContext = null)
     {
         var card = machine.CachedCard;
         var validation = ValidateStart(machine, ReferenceEquals(_executingMachine, machine));
@@ -474,7 +500,7 @@ public sealed partial class FactoryLinePanel : Control, INodeAttachmentSetup
         }
         if (machine.Kind == FactoryMachineKind.ProcessingTable)
         {
-            await ActivateProcessingTableAsync(machine, card);
+            await ActivateProcessingTableAsync(machine, card, choiceContext);
             return;
         }
 
@@ -546,7 +572,7 @@ public sealed partial class FactoryLinePanel : Control, INodeAttachmentSetup
             var legalCount = PileType.Hand.GetPile(card.Owner).Cards.OfType<FactoryComponentCard>().Count();
             if (card is ManualAssembly && legalCount < 2)
                 return MachineStartResult.Fail(MachineStartFailureReason.NoLegalCardTarget, "手牌中需要两张可融锻构件");
-            if (card is IFactoryProcedureCard && legalCount < 1)
+            if (card is IFactoryProcedureCard procedure && !procedure.HasLegalTargets(fromProcessingTable: true))
                 return MachineStartResult.Fail(MachineStartFailureReason.NoLegalCardTarget, "手牌中没有可加工构件");
             var requirement = FactoryProcedureRequirements.For(card);
             if (!FactoryProcedureRequirements.CanPay(card))
@@ -557,22 +583,59 @@ public sealed partial class FactoryLinePanel : Control, INodeAttachmentSetup
         return MachineStartResult.Ok(machine.Kind == FactoryMachineKind.ProcessingTable ? "可选择加工目标" : "可启动");
     }
 
-    private async Task ActivateProcessingTableAsync(FactoryMachineState machine, CardModel card)
+    private async Task ActivateProcessingTableAsync(
+        FactoryMachineState machine,
+        CardModel card,
+        PlayerChoiceContext? choiceContext)
     {
+        var processingChoiceContext = choiceContext ?? new ThrowingPlayerChoiceContext();
         if (card is IFactoryProcedureCard procedure)
         {
             _busy = true;
             _executingMachine = machine;
             try
             {
-                var applied = await procedure.ExecuteProcedureAsync(new ThrowingPlayerChoiceContext());
+                var resourcesCommitted = false;
+                async Task<bool> CommitResourcesAsync()
+                {
+                    if (!ReferenceEquals(machine.CachedCard, card))
+                    {
+                        FactoryCombatState.For(card.Owner.Creature.CombatState!).ReportFailure(machine,
+                            MachineStartResult.Fail(MachineStartFailureReason.CardNoLongerAvailable, "工序牌已不在加工台中"));
+                        return false;
+                    }
+                    if (GetAvailableCharge(machine, card) < 1)
+                    {
+                        FactoryCombatState.For(card.Owner.Creature.CombatState!).ReportFailure(machine,
+                            MachineStartResult.Fail(MachineStartFailureReason.InsufficientCharge, "确认目标后电量已不足", 1,
+                                GetAvailableCharge(machine, card)));
+                        return false;
+                    }
+                    if (!FactoryProcedureRequirements.CanPay(card))
+                    {
+                        var requirement = FactoryProcedureRequirements.For(card);
+                        FactoryCombatState.For(card.Owner.Creature.CombatState!).ReportFailure(machine,
+                            MachineStartResult.Fail(MachineStartFailureReason.MissingMaterial,
+                                $"确认目标后缺少 {requirement.DisplayName}", missingResourceName: requirement.DisplayName));
+                        return false;
+                    }
+
+                    await FactoryProcedureRequirements.PayAsync(card);
+                    await PayChargeAsync(machine, card, 1);
+                    resourcesCommitted = true;
+                    return true;
+                }
+
+                var applied = await procedure.ExecuteProcedureAsync(
+                    processingChoiceContext,
+                    fromProcessingTable: true,
+                    commitResources: CommitResourcesAsync);
                 if (!applied)
                 {
-                    FactoryCombatState.For(card.Owner.Creature.CombatState!).Record("已取消加工；未消耗机械电量");
+                    if (!resourcesCommitted)
+                        FactoryCombatState.For(card.Owner.Creature.CombatState!).Record("已取消加工；未消耗机械电量或材料");
                     return;
                 }
-                await FactoryProcedureRequirements.PayAsync(card);
-                await PayChargeAsync(machine, card, 1);
                 await ResolveRecursiveProcessingAsync(machine, card.Owner);
                 FactoryCombatState.For(card.Owner.Creature.CombatState!).Record($"{machine.Name} 执行 {card.Title}；工序继续保留");
             }
@@ -585,7 +648,7 @@ public sealed partial class FactoryLinePanel : Control, INodeAttachmentSetup
         try
         {
             var targets = await assembly.SelectTargetsAsync(
-                new ThrowingPlayerChoiceContext(), card.Owner, reportCancellation: false);
+                processingChoiceContext, card.Owner, reportCancellation: false);
             if (targets is null)
             {
                 FactoryCombatState.For(card.Owner.Creature.CombatState!).Record("已取消加工；未消耗电量或材料");
@@ -606,10 +669,10 @@ public sealed partial class FactoryLinePanel : Control, INodeAttachmentSetup
                 return;
             }
 
-            await FactoryProcedureRequirements.PayAsync(card);
             await PayChargeAsync(machine, card, 1);
-            await ResolveRecursiveProcessingAsync(machine, card.Owner);
-            await FactoryFusionService.FuseAsync(targets.Body, targets.Material, assembly.IsUpgraded);
+            var fused = await FactoryFusionService.FuseAsync(targets.Body, targets.Material, assembly.IsUpgraded);
+            if (fused)
+                await ResolveRecursiveProcessingAsync(machine, card.Owner);
             FactoryCombatState.For(card.Owner.Creature.CombatState!).Record($"{machine.Name} 执行 {card.Title}；工序继续保留");
         }
         finally

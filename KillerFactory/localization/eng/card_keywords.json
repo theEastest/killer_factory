@@ -4,7 +4,7 @@
   "KILLER_FACTORY_KEYWORD_DISPOSABLE_COMPONENT.title": "Disposable Component",
   "KILLER_FACTORY_KEYWORD_DISPOSABLE_COMPONENT.description": "Exhaust this after it is played by a machine.",
   "KILLER_FACTORY_KEYWORD_FRAGILE_COMPONENT.title": "Fragile Component",
-  "KILLER_FACTORY_KEYWORD_FRAGILE_COMPONENT.description": "The first process succeeds; it breaks before a second process.",
+  "KILLER_FACTORY_KEYWORD_FRAGILE_COMPONENT.description": "The first process resolves normally. On the second process, that process has no effect: this card breaks before resolution, enters the Exhaust Pile, and creates 1 Scrap. Efficient creates a Universal Material instead. Precisionization removes Fragile when it is the first process.",
   "KILLER_FACTORY_KEYWORD_PRECISION_COMPONENT.title": "Precision Component",
   "KILLER_FACTORY_KEYWORD_PRECISION_COMPONENT.description": "When used as the fusion body, the material's Cost is not added.",
   "KILLER_FACTORY_KEYWORD_PROCEDURE.title": "Procedure",

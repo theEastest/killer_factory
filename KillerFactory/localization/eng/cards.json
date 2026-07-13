@@ -156,5 +156,7 @@
   "KILLER_FACTORY_FUSED_MULTI_DAMAGE": "[gold]Fused:[/gold] Deal {Amount} damage {Hits} times.",
   "KILLER_FACTORY_FUSED_BLOCK": "[gold]Fused:[/gold] Gain {Amount} Block.",
   "KILLER_FACTORY_FUSED_SCRAP": "[gold]Fused:[/gold] Add {Amount} Scrap to your Hand.",
-  "KILLER_FACTORY_MOD_EXTERNAL_SPRING": "[gold]External Spring:[/gold] After this is played, return it to your Hand unless it was broken or scrapped. If your Hand is full, put it in Discard instead."
+  "KILLER_FACTORY_MOD_EXTERNAL_SPRING": "[gold]External Spring:[/gold] After this is played, return it to your Hand unless it was broken or scrapped. If your Hand is full, put it in Discard instead.",
+  "KILLER_FACTORY_FRAGILE_PROCESS_COUNT_SAFE": "[gold]Current Procedures:[/gold] 0/1. Can be processed 1 more time.",
+  "KILLER_FACTORY_FRAGILE_PROCESS_COUNT_DANGER": "[gold]Current Procedures:[/gold] 1/1. Processing again will break this card, and that procedure will have no effect."
 }

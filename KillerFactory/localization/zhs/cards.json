@@ -156,5 +156,7 @@
   "KILLER_FACTORY_FUSED_MULTI_DAMAGE": "[gold]融锻效果：[/gold]造成 {Amount} 点伤害 {Hits} 次。",
   "KILLER_FACTORY_FUSED_BLOCK": "[gold]融锻效果：[/gold]获得 {Amount} 点格挡。",
   "KILLER_FACTORY_FUSED_SCRAP": "[gold]融锻效果：[/gold]将 {Amount} 张废料加入手牌。",
-  "KILLER_FACTORY_MOD_EXTERNAL_SPRING": "[gold]外加弹簧：[/gold]打出后，若未损坏或报废，则返回手牌；手牌已满时改为进入弃牌堆。"
+  "KILLER_FACTORY_MOD_EXTERNAL_SPRING": "[gold]外加弹簧：[/gold]打出后，若未损坏或报废，则返回手牌；手牌已满时改为进入弃牌堆。",
+  "KILLER_FACTORY_FRAGILE_PROCESS_COUNT_SAFE": "[gold]当前加工次数：[/gold]0/1。可再加工1次。",
+  "KILLER_FACTORY_FRAGILE_PROCESS_COUNT_DANGER": "[gold]当前加工次数：[/gold]1/1。再次加工将损坏，本次加工不生效。"
 }

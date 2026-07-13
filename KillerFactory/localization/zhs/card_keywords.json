@@ -4,7 +4,7 @@
   "KILLER_FACTORY_KEYWORD_DISPOSABLE_COMPONENT.title": "一次性构件",
   "KILLER_FACTORY_KEYWORD_DISPOSABLE_COMPONENT.description": "从机械中打出后会被消耗。",
   "KILLER_FACTORY_KEYWORD_FRAGILE_COMPONENT.title": "脆弱构件",
-  "KILLER_FACTORY_KEYWORD_FRAGILE_COMPONENT.description": "第一次加工成功；再次加工前会损坏。",
+  "KILLER_FACTORY_KEYWORD_FRAGILE_COMPONENT.description": "第一次加工正常生效。第二次加工时，本次加工不生效，该构件会在结算前损坏并进入消耗区，同时生成1张废料；若具有高效，则改为生成万能原料。精密化作为第一次加工时会移除脆弱构件。",
   "KILLER_FACTORY_KEYWORD_PRECISION_COMPONENT.title": "精密构件",
   "KILLER_FACTORY_KEYWORD_PRECISION_COMPONENT.description": "作为融锻主体时，不会增加材料构件的费用。",
   "KILLER_FACTORY_KEYWORD_PROCEDURE.title": "工序",

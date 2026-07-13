@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.ValueProps;
 using KillerFactory.Characters;
 using KillerFactory.Mechanics;
 using STS2RitsuLib.Interop.AutoRegistration;
+using STS2RitsuLib.Models.Capabilities;
 
 namespace KillerFactory.Cards;
 
@@ -228,16 +229,28 @@ public sealed class StandardUpgrade : FactoryCardTemplate, IFactoryProcedureCard
 {
     public override IEnumerable<CardKeyword> CanonicalKeywords => [FactoryKeywords.Procedure];
     public StandardUpgrade() : base(1, CardType.Skill, CardRarity.Common, TargetType.Self, true, "process") { }
-    protected override async Task OnPlay(PlayerChoiceContext context, CardPlay play) => await ExecuteProcedureAsync(context);
-    public async Task<bool> ExecuteProcedureAsync(PlayerChoiceContext context)
+    protected override async Task OnPlay(PlayerChoiceContext context, CardPlay play) =>
+        await ExecuteProcedureAsync(context);
+    private List<FactoryComponentCard> GetCandidates() => PileType.Hand.GetPile(Owner).Cards
+        .OfType<FactoryComponentCard>().Where(card => card.IsUpgradable).ToList();
+    public bool HasLegalTargets(bool fromProcessingTable = false) => GetCandidates().Count > 0;
+    public async Task<bool> ExecuteProcedureAsync(
+        PlayerChoiceContext context,
+        bool fromProcessingTable = false,
+        Func<Task<bool>>? commitResources = null)
     {
-        var candidates = PileType.Hand.GetPile(Owner).Cards.OfType<FactoryComponentCard>().Where(card => card.IsUpgradable).ToList();
+        var candidates = GetCandidates();
         if (candidates.Count == 0) return false;
         var prefs = new CardSelectorPrefs(new LocString("card_selection", "KILLER_FACTORY_SELECT_UPGRADE"), 1)
         { Cancelable = true, RequireManualConfirmation = true };
-        var selected = (await CardSelectCmd.FromSimpleGrid(context, candidates, Owner, prefs)).FirstOrDefault();
+        var selected = (await CardSelectCmd.FromSimpleGrid(context, candidates, Owner, prefs))
+            .OfType<FactoryComponentCard>().FirstOrDefault();
         if (selected is null) return false;
+        if (selected.Pile?.Type != PileType.Hand || !selected.IsUpgradable) return false;
+        if (commitResources is not null && !await commitResources()) return false;
+        if (!await FactoryFusionService.TryBeginProcessingAsync(selected)) return true;
         CardCmd.Upgrade(selected);
+        selected.GetOrCreateCapability<FactoryCardStateCapability>().ApplyProcessing(_ => { });
         return true;
     }
     protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
@@ -248,18 +261,29 @@ public sealed class Lightweighting : FactoryCardTemplate, IFactoryProcedureCard
 {
     public override IEnumerable<CardKeyword> CanonicalKeywords => [FactoryKeywords.Procedure];
     public Lightweighting() : base(1, CardType.Skill, CardRarity.Common, TargetType.Self, true, "process") { }
-    protected override async Task OnPlay(PlayerChoiceContext context, CardPlay play) => await ExecuteProcedureAsync(context);
-    public async Task<bool> ExecuteProcedureAsync(PlayerChoiceContext context)
+    protected override async Task OnPlay(PlayerChoiceContext context, CardPlay play) =>
+        await ExecuteProcedureAsync(context);
+    private List<FactoryComponentCard> GetCandidates() => PileType.Hand.GetPile(Owner).Cards.OfType<FactoryComponentCard>()
+        .Where(card => card.EnergyCost.GetWithModifiers(CostModifiers.None) > 0).ToList();
+    public bool HasLegalTargets(bool fromProcessingTable = false) => GetCandidates().Count > 0;
+    public async Task<bool> ExecuteProcedureAsync(
+        PlayerChoiceContext context,
+        bool fromProcessingTable = false,
+        Func<Task<bool>>? commitResources = null)
     {
-        var candidates = PileType.Hand.GetPile(Owner).Cards.OfType<FactoryComponentCard>()
-            .Where(card => card.EnergyCost.GetWithModifiers(CostModifiers.None) > 0).ToList();
+        var candidates = GetCandidates();
         if (candidates.Count == 0) return false;
         var prefs = new CardSelectorPrefs(new LocString("card_selection", "KILLER_FACTORY_SELECT_LIGHTWEIGHT"), 1)
         { Cancelable = true, RequireManualConfirmation = true };
-        var selected = (await CardSelectCmd.FromSimpleGrid(context, candidates, Owner, prefs)).FirstOrDefault();
+        var selected = (await CardSelectCmd.FromSimpleGrid(context, candidates, Owner, prefs))
+            .OfType<FactoryComponentCard>().FirstOrDefault();
         if (selected is null) return false;
+        if (selected.Pile?.Type != PileType.Hand || selected.EnergyCost.GetWithModifiers(CostModifiers.None) <= 0) return false;
+        if (commitResources is not null && !await commitResources()) return false;
+        if (!await FactoryFusionService.TryBeginProcessingAsync(selected)) return true;
         var current = selected.EnergyCost.GetWithModifiers(CostModifiers.None);
         selected.EnergyCost.SetCustomBaseCost(Math.Max(0, current - 1));
+        selected.GetOrCreateCapability<FactoryCardStateCapability>().ApplyProcessing(_ => { });
         return true;
     }
     protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);

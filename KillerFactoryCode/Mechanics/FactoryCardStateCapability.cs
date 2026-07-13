@@ -51,24 +51,49 @@ public sealed class FactoryCardStateCapability
 
     public void ApplyProcessing(Action<FactoryCardInstanceState> mutation)
     {
-        MutateState(state => { state.ProcessCount++; mutation(state); });
+        var state = CopyState();
+        state.ProcessCount++;
+        mutation(state);
+        SetState(state);
     }
 
-    public void ResetProcessCount() => MutateState(state => state.ProcessCount = 0);
+    public void ResetProcessCount()
+    {
+        var state = CopyState();
+        state.ProcessCount = 0;
+        SetState(state);
+    }
 
     public void AddFusion(IEnumerable<FactoryEffectSegment> effects)
     {
-        MutateState(state =>
-        {
-            state.ProcessCount++;
-            state.FusedEffects.AddRange(effects.Select(effect => new FactoryEffectSegment
-            {
-                Kind = effect.Kind,
-                Amount = effect.Amount,
-                Hits = effect.Hits,
-            }));
-        });
+        var state = CopyState();
+        state.ProcessCount++;
+        state.FusedEffects.AddRange(effects.Select(CopyEffect));
+        SetState(state);
     }
+
+    // Capability models may be cloned from a registered prototype. Never mutate the
+    // state payload in place: a shallowly cloned prototype can otherwise make several
+    // cards observe the same mutable state object.
+    private FactoryCardInstanceState CopyState() => new()
+    {
+        ProcessCount = State.ProcessCount,
+        FusedEffects = State.FusedEffects.Select(CopyEffect).ToList(),
+        HasExternalSpring = State.HasExternalSpring,
+        IsEfficient = State.IsEfficient,
+        EfficientDraw = State.EfficientDraw,
+        IsHard = State.IsHard,
+        IsStreamlined = State.IsStreamlined,
+        IsSticky = State.IsSticky,
+        StickyFirstCopyFree = State.StickyFirstCopyFree,
+    };
+
+    private static FactoryEffectSegment CopyEffect(FactoryEffectSegment effect) => new()
+    {
+        Kind = effect.Kind,
+        Amount = effect.Amount,
+        Hits = effect.Hits,
+    };
 
     public TargetType? GetTargetType(CardModel card) =>
         State.FusedEffects.Any(effect => effect.Kind == FactoryEffectKind.Damage)
@@ -97,6 +122,26 @@ public sealed class FactoryCardStateCapability
             text.Add("Hits", effect.Hits);
             yield return new CardDescriptionFragment(text);
         }
+    }
+}
+
+[RegisterModelCapability]
+[RegisterDefaultModelCapability(typeof(FactoryComponentCard))]
+public sealed class FactoryFragileProcessDescriptionCapability
+    : ModelCapability<CardModel>, ICardDescriptionContributor
+{
+    public IEnumerable<CardDescriptionFragment> GetDescriptionFragments(CardDescriptionContext context)
+    {
+        if (!context.Card.Keywords.Contains(FactoryKeywords.FragileComponent))
+            yield break;
+
+        var processCount = context.Card.TryGetCapability<FactoryCardStateCapability>(out var state)
+            ? state.ProcessCount
+            : 0;
+        var processCountKey = processCount <= 0
+            ? "KILLER_FACTORY_FRAGILE_PROCESS_COUNT_SAFE"
+            : "KILLER_FACTORY_FRAGILE_PROCESS_COUNT_DANGER";
+        yield return new CardDescriptionFragment(new LocString("cards", processCountKey));
     }
 }
 
