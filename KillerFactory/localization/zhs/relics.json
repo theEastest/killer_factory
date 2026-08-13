@@ -1,5 +1,5 @@
 {
-  "KILLER_FACTORY_RELIC_KILLER_FACTORY_RELIC.title": "简易机械臂",
-  "KILLER_FACTORY_RELIC_KILLER_FACTORY_RELIC.description": "每场战斗开始时，在机械产线中架设一台简易机械臂。",
-  "KILLER_FACTORY_RELIC_KILLER_FACTORY_RELIC.flavor": "它动作迟缓，但从不抱怨重复劳动。"
+  "KILLER_FACTORY_RELIC_AUTOMATIC_ASSEMBLY_MACHINE.title": "自动装配机",
+  "KILLER_FACTORY_RELIC_AUTOMATIC_ASSEMBLY_MACHINE.description": "每回合抽牌结束后，若手牌中没有基础装配，将一张临时的基础装配加入手牌。",
+  "KILLER_FACTORY_RELIC_AUTOMATIC_ASSEMBLY_MACHINE.flavor": "装配计划永远不会缺席。"
 }

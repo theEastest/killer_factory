@@ -1,5 +1,5 @@
 {
-  "KILLER_FACTORY_RELIC_KILLER_FACTORY_RELIC.title": "Simple Mechanical Arm",
-  "KILLER_FACTORY_RELIC_KILLER_FACTORY_RELIC.description": "At the start of each combat, install a Simple Mechanical Arm on the factory line.",
-  "KILLER_FACTORY_RELIC_KILLER_FACTORY_RELIC.flavor": "Slow, dependable, and incapable of complaining about repetition."
+  "KILLER_FACTORY_RELIC_AUTOMATIC_ASSEMBLY_MACHINE.title": "Automatic Assembly Machine",
+  "KILLER_FACTORY_RELIC_AUTOMATIC_ASSEMBLY_MACHINE.description": "After drawing at the start of each turn, if Basic Assembly is not in your Hand, add a temporary Basic Assembly to your Hand.",
+  "KILLER_FACTORY_RELIC_AUTOMATIC_ASSEMBLY_MACHINE.flavor": "The assembly plan is never absent."
 }

@@ -1,20 +1,8 @@
 {
-  "KILLER_FACTORY_KEYWORD_PERMANENT_COMPONENT.title": "永久构件",
-  "KILLER_FACTORY_KEYWORD_PERMANENT_COMPONENT.description": "加工获得的实例改动会保留在这张牌上。",
-  "KILLER_FACTORY_KEYWORD_DISPOSABLE_COMPONENT.title": "一次性构件",
-  "KILLER_FACTORY_KEYWORD_DISPOSABLE_COMPONENT.description": "从机械中打出后会被消耗。",
-  "KILLER_FACTORY_KEYWORD_FRAGILE_COMPONENT.title": "脆弱构件",
-  "KILLER_FACTORY_KEYWORD_FRAGILE_COMPONENT.description": "第一次加工正常生效。第二次加工时，本次加工不生效，该构件会在结算前损坏并进入消耗区，同时生成1张废料；若具有高效，则改为生成万能原料。精密化作为第一次加工时会移除脆弱构件。",
-  "KILLER_FACTORY_KEYWORD_PRECISION_COMPONENT.title": "精密构件",
-  "KILLER_FACTORY_KEYWORD_PRECISION_COMPONENT.description": "作为融锻主体时，不会增加材料构件的费用。",
-  "KILLER_FACTORY_KEYWORD_PROCEDURE.title": "工序",
-  "KILLER_FACTORY_KEYWORD_PROCEDURE.description": "用于加工构件或操作工厂系统的卡牌。",
-  "KILLER_FACTORY_KEYWORD_MATERIAL.title": "原料",
-  "KILLER_FACTORY_KEYWORD_MATERIAL.description": "可被生产、加工和机械效果消耗。",
-  "KILLER_FACTORY_KEYWORD_WASTE.title": "废料",
-  "KILLER_FACTORY_KEYWORD_WASTE.description": "占用手牌，可被分解类效果处理。",
-  "KILLER_FACTORY_KEYWORD_DAMAGED_PRODUCT.title": "残次品",
-  "KILLER_FACTORY_KEYWORD_DAMAGED_PRODUCT.description": "由加工失败产生，可被修复或回收。"
-  ,"KILLER_FACTORY_KEYWORD_VIRUS_COMPONENT.title": "病毒构件"
-  ,"KILLER_FACTORY_KEYWORD_VIRUS_COMPONENT.description": "生效时会将其他实际手牌转化为自身复制的构件。"
+  "KILLER_FACTORY_KEYWORD_ASSEMBLY.title": "装配",
+  "KILLER_FACTORY_KEYWORD_ASSEMBLY.description": "选择手牌中连续相邻的零件，按从左到右的顺序生成装配产物。",
+  "KILLER_FACTORY_KEYWORD_PART.title": "零件",
+  "KILLER_FACTORY_KEYWORD_PART.description": "可以被装配牌选择，并作为模块加入产物。",
+  "KILLER_FACTORY_KEYWORD_PRODUCT.title": "产物",
+  "KILLER_FACTORY_KEYWORD_PRODUCT.description": "由零件临时装配而成。按顺序执行模块，并在使用后损失耐久。"
 }

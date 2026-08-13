@@ -1,50 +1,37 @@
-# 杀戮工厂（KillerFactory）
+# 总装师（Assembler）实验分支
 
-《杀戮尖塔2》自定义角色模组，基于 RitsuLib 与 Godot 4.5.1 Mono 开发。
+《杀戮尖塔2》自定义角色实验模组，基于 RitsuLib 与 Godot 4.5.1 Mono 开发。
+
+本分支只保留总装师角色：调整手牌顺序，将连续相邻的零件装配成具有费用、模块和耐久的临时产物。
 
 ## 开发环境
 
-- Slay the Spire 2 `0.108.0`
+- Slay the Spire 2 `0.110.x`
 - Godot .NET `4.5.1`
 - .NET SDK 9 或更高版本
-- RitsuLib（版本固定在 `KillerFactory.csproj`，运行时依赖会同步到 `KillerFactory.json`）
+- RitsuLib `0.5.4`
 
-复制 `local.props.template` 为 `local.props`，填写游戏和 Godot 的本机路径。`local.props` 不会提交到 Git。
+复制 `local.props.template` 为 `local.props`，填写游戏与 Godot 的本机路径。
 
 ## 构建
 
-仅验证 C# 编译，不复制到游戏、不导出 PCK：
+仅验证 C#：
 
 ```powershell
-dotnet build .\KillerFactory.csproj /p:RunPckExport=false /p:CopyModOnBuild=false
+dotnet build .\KillerFactory.csproj -p Platform=x64 -p:RunPckExport=false
 ```
 
-完整构建并部署 DLL、manifest 和 PCK：
+完整构建、导出 PCK 并部署：
 
 ```powershell
-dotnet build .\KillerFactory.csproj
+dotnet build .\KillerFactory.csproj -p Platform=x64
 ```
 
-完整产物位于游戏目录的 `mods/KillerFactory/`。
+## 保留内容
 
-## 战斗内操作
+- `KillerFactoryCode/Cards/AssemblerCards.cs`：初始牌、产物和基础奖励牌
+- `KillerFactoryCode/Cards/AssemblerRewardCards.cs`：后续奖励卡池
+- `KillerFactoryCode/Mechanics/AssemblerMechanics.cs`：装配、模块、耐久和维修
+- `review/当前卡牌逻辑审核_审核整理版.xlsx`：总装师卡牌审核表
 
-- 产线只显示已架设机械，最多 10 台。
-- 将手牌构件拖到机械色块上装填；再次拖入会免费替换。
-- 点击“取回”免费放回手牌，手牌已满时不会执行。
-- 点击“启动”消耗机械电量并自动打出缓存构件。
-- 手工装配会依次弹出主体与材料选择，不再自动选择最左侧卡牌。
-
-## 目录
-
-- `KillerFactoryCode/`：C# 代码
-- `KillerFactory/`：Godot 场景、图片和本地化
-- `游戏设计思路.txt`：玩法设计草案
-- `初版卡牌实现.txt`：当前实现任务书和验收标准
-- `IMPLEMENTATION_STATUS.md`：当前垂直切片的完成项、设计差异和后续阶段
-- `D:\godot_project\reference`：本机参考资料，不属于仓库
-
-## 依赖
-
-- [STS2-RitsuLib](https://github.com/BAKAOLC/STS2-RitsuLib)
-- [模组制作教程](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)
+旧杀戮工厂角色的加工台、机械产线、材料、融锻、旧卡池与设计文档已从本分支移除。

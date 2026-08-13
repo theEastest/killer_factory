@@ -5,6 +5,8 @@ using MegaCrit.Sts2.Core.Modding;
 using STS2RitsuLib;
 using STS2RitsuLib.Interop;
 using KillerFactory.Mechanics;
+using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using Logger = MegaCrit.Sts2.Core.Logging.Logger;
 
 namespace KillerFactory;
@@ -36,17 +38,15 @@ public partial class Entry
         ModTypeDiscoveryHub.RegisterModAssembly(ModId, assembly);
         new Harmony("killer_factory.runtime").PatchAll(assembly);
 
-        // 产线面板只应在当前战斗由初始遗物激活，避免上一场状态泄漏到其他角色或战斗。
-        RitsuLibFramework.SubscribeLifecycle<CombatStartingEvent>(static _ => FactoryCombatState.ClearCurrent());
-        RitsuLibFramework.SubscribeLifecycle<CombatEndedEvent>(static _ => FactoryCombatState.ClearCurrent());
-        RitsuLibFramework.SubscribeLifecycle<CardMovedBetweenPilesEvent>(static _ =>
-            FactoryCombatEndWatcher.OnCardMoved());
-        RitsuLibFramework.SubscribeLifecycle<PlayerTurnStartedEvent>(FactoryAbilityRuntime.OnTurnStarted);
-        RitsuLibFramework.SubscribeLifecycle<CardDrawnEvent>(FactoryAbilityRuntime.OnCardDrawn);
-        RitsuLibFramework.SubscribeLifecycle<CardExhaustedEvent>(FactoryAbilityRuntime.OnCardExhausted);
-        RitsuLibFramework.SubscribeLifecycle<CardMovedBetweenPilesEvent>(FactoryAbilityRuntime.OnCardMoved);
-        RitsuLibFramework.SubscribeLifecycle<CardPlayedEvent>(FactoryAbilityRuntime.OnCardPlayed);
+        RitsuLibFramework.SubscribeLifecycle<PlayerTurnStartedEvent>(AssemblerAbilityRuntime.OnTurnStarted);
+        RitsuLibFramework.SubscribeLifecycle<SideTurnEndingEvent>(AssemblerAbilityRuntime.OnTurnEnding);
+        RitsuLibFramework.SubscribeLifecycle<CardPlayedEvent>(AssemblerAbilityRuntime.OnCardPlayed);
+        RitsuLibFramework.SubscribeLifecycle<CardPlayingEvent>(AssemblerAbilityRuntime.OnCardPlaying);
+        RitsuLibFramework.SubscribeLifecycle<CardDrawnEvent>(AssemblerAbilityRuntime.OnCardDrawn);
+        RitsuLibFramework.SubscribeLifecycle<CardExhaustedEvent>(AssemblerAbilityRuntime.OnCardExhausted);
+        RitsuLibFramework.SubscribeLifecycle<CardDiscardedEvent>(AssemblerAbilityRuntime.OnCardDiscarded);
+        RitsuLibFramework.SubscribeLifecycle<CardMovedBetweenPilesEvent>(AssemblerAbilityRuntime.OnCardMoved);
 
-        Logger.Info("KillerFactory initialized.");
+        Logger.Info("KillerFactory Assembler experiment initialized.");
     }
 }
